@@ -1,0 +1,168 @@
+name: CentOS
+
+on:
+  push:
+    branches:
+      - main
+      - feature/*
+      - merge*
+      - fix/*
+      - release/*
+  release:
+    types: [ created ]
+
+env:
+  GITHUB_TOKEN: ${{ github.token }}
+  RELEASE_CREATED: ${{ github.event_name == 'release' && github.event.action == 'created' }}
+
+jobs:
+
+  build:
+    name: shrd=${{ matrix.shared }} sirius=${{ matrix.sirius }} extras=${{ matrix.extras }} java=${{ matrix.java }} dotnet=${{ matrix.dotnet }} python=${{ matrix.python }}-${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    container: 'centos:centos7'
+    env:
+      SIRIUS_RELEASE_TAG: antares-integration-v1.4
+      XPRESS_INSTALL_DIR: xpressmp
+    strategy:
+      fail-fast: false
+      matrix:
+        sirius: [ON, OFF]
+        shared: [ON, OFF]
+        extras: [OFF]
+        include:
+          - extras: OFF
+            python: OFF
+            java: OFF
+            dotnet: OFF
+          - sirius: ON
+            shared: OFF
+            extras: OFF
+            python: OFF
+            java: OFF
+            dotnet: OFF
+
+    steps:
+      - name: set name variables
+        id: names
+        run: |
+          SHARED=${{ matrix.shared }}
+          [ $SHARED == "ON" ] && WITH_SHARED="_shared" || WITH_SHARED="_static"
+          SIRIUS=${{ matrix.sirius }}
+          [ $SIRIUS == "ON" ] && WITH_SIRIUS="_sirius" || WITH_SIRIUS=""
+          OS="_centos7"
+          APPENDIX="${OS}${WITH_SIRIUS}"
+          APPENDIX_WITH_SHARED="${OS}${WITH_SHARED}${WITH_SIRIUS}"
+          echo "appendix=$APPENDIX" >> $GITHUB_OUTPUT
+          echo "appendix_with_shared=$APPENDIX_WITH_SHARED" >> $GITHUB_OUTPUT
+
+      # Fill variable ${BRANCH_NAME}
+      - uses: nelonoel/branch-name@v1.0.1
+
+      - name: Install requirements (yum)
+        run: |
+          yum install -y epel-release
+          yum install -y git redhat-lsb-core make wget centos-release-scl scl-utils python3
+          yum install -y devtoolset-11
+          python3 -m pip install --upgrade pip
+          python3 -m pip install dataclasses
+      - name: Setup cmake
+        uses: jwlawson/actions-setup-cmake@v1.13
+        with:
+          cmake-version: '3.22.x'
+
+      - name: Checkout OR-Tools
+        run: |
+          git clone $GITHUB_SERVER_URL/sgatto/or-tools.git -b main .
+
+      - name: Checkout this repository
+        run: |
+          git clone $GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git -b ${BRANCH_NAME} "patch"
+
+      - name: Apply patch
+        run: |
+          cp -r patch/* .
+          python3 patch.py
+
+      - name: Set-up Xpress from wheel
+        run: |
+          python3 -m pip install --upgrade pip
+          mkdir xpress
+          cd xpress
+          python3 -m pip download --only-binary=:all: --python-version 310  "xpress>=9.2,<9.3"
+          unzip xpr*.whl
+          XPRESS_DIR=$PWD/xpress
+          echo "XPRESSDIR=$XPRESS_DIR" >> $GITHUB_ENV
+          echo "XPAUTH_PATH=$XPRESS_DIR/license/community-xpauth.xpr" >> $GITHUB_ENV
+          ln -s $XPRESS_DIR/lib/libxprs.so.42 $XPRESS_DIR/lib/libxprs.so
+
+
+      - name: Download Sirius
+        if : ${{ matrix.sirius == 'ON' }}
+        run: |
+          zipfile=centos-7_sirius-solver.zip
+          wget https://github.com/rte-france/sirius-solver/releases/download/${{ env.SIRIUS_RELEASE_TAG }}/$zipfile
+          unzip $zipfile
+          mv centos-7_sirius-solver-install sirius_install
+          echo "LD_LIBRARY_PATH=$PWD/sirius_install/lib" >> $GITHUB_ENV
+          echo "SIRIUS_CMAKE_DIR=$PWD/sirius_install/cmake" >> $GITHUB_ENV
+
+      - name: Configure OR-Tools
+        run: |
+          source /opt/rh/devtoolset-11/enable
+          cmake --version
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_SHARED_LIBS=${{ matrix.shared }} \
+            -DBUILD_PYTHON=${{ matrix.python }} \
+            -DBUILD_JAVA=${{ matrix.java }} \
+            -DBUILD_DOTNET=${{ matrix.dotnet }} \
+            -DBUILD_EXAMPLES=${{ env.RELEASE_CREATED == 'true' && 'OFF' || 'ON' }} \
+            -DBUILD_DEPS=ON \
+            -DUSE_SIRIUS=${{ matrix.sirius }} \
+            -Dsirius_solver_DIR="${{ env.SIRIUS_CMAKE_DIR }}" \
+            -DCMAKE_INSTALL_PREFIX="build/install" \
+            -DBUILD_SAMPLES=OFF \
+            -DBUILD_FLATZINC=OFF
+
+      - name: Build OR-Tools Linux
+        run: |
+          source /opt/rh/devtoolset-11/enable
+          cmake --build build --config Release --target all install -j4
+
+      - name: run tests not xpress
+        if: ${{ matrix.shared == 'ON' }}
+        run: |
+          cd build
+          ctest -C Release --output-on-failure  -E "_xpress"
+
+      - name: run tests xpress
+        run: |
+          cd build
+          ctest -V -C Release --output-on-failure  -R "_xpress"
+
+      - name: run tests sirius
+        run: |
+          cd build
+          ctest -V -C Release --output-on-failure  -R "sirius"
+
+      - name: Prepare OR-Tools install
+        id: or-install
+        run: |
+          cd build
+          ARCHIVE_NAME="ortools_cxx${{ steps.names.outputs.appendix_with_shared }}.zip"
+          ARCHIVE_PATH="$PWD/${ARCHIVE_NAME}"
+          zip -r $ARCHIVE_PATH ./install
+          echo "archive_name=$ARCHIVE_NAME" >> $GITHUB_OUTPUT
+          echo "archive_path=$ARCHIVE_PATH" >> $GITHUB_OUTPUT
+
+      - name: Upload OR-Tools install artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ steps.or-install.outputs.archive_name }}
+          path: ${{ steps.or-install.outputs.archive_path }}
+      - name: Publish OR-Tools install asset
+        if: ${{ env.RELEASE_CREATED == 'true' }}
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ steps.or-install.outputs.archive_path }}
