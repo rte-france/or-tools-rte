@@ -33,7 +33,7 @@ jobs:
       - name: Checkout or-tools
         uses: actions/checkout@v4
         with:
-          repository: rte-france/or-tools
+          repository: google/or-tools
           ref: "main"
 
       - name: Checkout this repository
