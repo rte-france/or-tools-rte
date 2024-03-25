@@ -42,7 +42,7 @@ jobs:
       - name: Checkout or-tools
         uses: actions/checkout@v4
         with:
-          repository: google/or-tools
+          repository: rte-france/or-tools
           ref: "main"
 
       - name: Checkout this repository

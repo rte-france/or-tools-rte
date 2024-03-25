@@ -73,7 +73,7 @@ jobs:
 
       - name: Checkout OR-Tools
         run: |
-          git clone $GITHUB_SERVER_URL/google/or-tools.git -b main .
+          git clone $GITHUB_SERVER_URL/rte-france/or-tools.git -b main .
 
       - name: Checkout this repository
         run: |
