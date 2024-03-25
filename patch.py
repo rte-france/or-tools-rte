@@ -1,24 +1,10 @@
 from pathlib import Path
 from typing import List
-from dataclasses import dataclass
-
-def replace_in_file(filepath, search, replace):
-    with open(filepath, 'r', encoding="utf8") as file:
-        data = file.read() 
-        data = data.replace(search, replace) 
-
-    with open(filepath, 'w', encoding="utf8") as file:
-        file.write(data) 
-
-
-@dataclass
-class Addition:
-    filepath: Path
-    search: str
-    add: str
+from patch_utils import *
 
 full_patch: List[Addition] = []
 
+# add the USE_SIRIUS configuration flag in CMakeLists.txt
 full_patch.append(Addition(
     Path.cwd()/'CMakeLists.txt',
     '''option(USE_CPLEX "Use the CPLEX solver" OFF)
@@ -29,6 +15,8 @@ message(STATUS "CPLEX support: ${USE_CPLEX}")
 message(STATUS "SIRIUS support: ${USE_SIRIUS}")
 
 '''))
+
+# add the USE_SIRIUS configuration flag in cpp.cmake
 
 full_patch.append(
     Addition(
@@ -48,6 +36,7 @@ if(USE_SIRIUS)
 endif()
 '''))
 
+# add the USE_SIRIUS configuration flag in deps.cmake
 full_patch.append(Addition(
     Path.cwd()/'cmake'/'deps.cmake',
     '''
@@ -65,6 +54,7 @@ if (USE_SIRIUS)
 endif(USE_SIRIUS)
 '''))
 
+# add the USE_SIRIUS configuration flag in ortoolsConfig.cmake.in
 full_patch.append(Addition(
     Path.cwd()/'cmake'/'ortoolsConfig.cmake.in',
     '''
@@ -85,7 +75,7 @@ if(@USE_SIRIUS@)
 endif()
 '''))
 
-
+# add SIRIUS execution in example files
 full_patch.append(Addition(
     Path.cwd()/'examples'/'cpp'/'linear_programming.cc',
     '  RunLinearProgrammingExample("XPRESS_LP");\n',
@@ -111,6 +101,7 @@ full_patch.append(Addition(
     '    RunLinearExampleCppStyleAPI("XPRESS_LP")\n',
     '    RunLinearExampleCppStyleAPI("SIRIUS_LP")\n'))
 
+# add the USE_SIRIUS configuration flag in ortools/linear_solver/CMakeLists.txt
 full_patch.append(Addition(
     Path.cwd()/'ortools'/'linear_solver'/'CMakeLists.txt',
     '  $<$<BOOL:${USE_SCIP}>:libscip>\n',
@@ -129,6 +120,7 @@ full_patch.append(Addition(
   endif()
 '''))
 
+# add the SIRIUS support in ortools/linear_solver/linear_solver.cc & .h
 full_patch.append(Addition(
     Path.cwd()/'ortools'/'linear_solver'/'linear_solver.cc',
     '''extern MPSolverInterface* BuildXpressInterface(bool mip,
@@ -187,5 +179,6 @@ full_patch.append(Addition(
     '  friend class XpressInterface;\n',
     '  friend class SiriusInterface;\n'))
 
+# run patch
 for a in full_patch:
     replace_in_file(a.filepath, a.search, a.search+a.add)
