@@ -1,6 +1,12 @@
 name: CentOS
 
 on:
+  workflow_dispatch:
+    inputs:
+      rtefrance_ortools_branch:
+        description: 'rte-france/or-tools branch name'
+        required: true
+        default: 'main'
   push:
     branches:
       - main
@@ -73,7 +79,7 @@ jobs:
 
       - name: Checkout OR-Tools
         run: |
-          git clone $GITHUB_SERVER_URL/rte-france/or-tools.git -b main .
+          git clone $GITHUB_SERVER_URL/rte-france/or-tools.git -b '${{ github.event.inputs.rtefrance_ortools_branch }}' .
 
       - name: Checkout this repository
         run: |
