@@ -1,11 +1,12 @@
 name: Windows-python
 
 on:
-  inputs:
-    rtefrance_ortools_branch:
-      description: 'rte-france/or-tools branch name'
-      required: true
-      default: 'main'
+  workflow_dispatch:
+    inputs:
+      rtefrance_ortools_branch:
+        description: 'rte-france/or-tools branch name'
+        required: true
+        default: 'main'
   push:
     branches:
       - main
