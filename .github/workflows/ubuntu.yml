@@ -1,0 +1,300 @@
+name: Ubuntu
+
+on:
+  workflow_dispatch:
+    inputs:
+      rtefrance_ortools_branch:
+        description: 'rte-france/or-tools branch name'
+        required: true
+        default: 'main'
+  push:
+    branches:
+      - main
+      - feature/*
+      - merge*
+      - fix/*
+      - release/*
+  release:
+    types: [ created ]
+
+env:
+  GITHUB_TOKEN: ${{ github.token }}
+
+jobs:
+  build:
+    name: ${{ matrix.os }} shrd=${{ matrix.cmake.shared }} sirius=${{ matrix.sirius }} java=${{ matrix.cmake.java }} dotnet=${{ matrix.cmake.dotnet }} python=${{ matrix.cmake.python }}-${{ matrix.cmake.python-version }}
+    runs-on: ${{ matrix.os }}
+    env:
+      XPRESSDIR: ${{ github.workspace }}/xpressmp
+      XPAUTH_PATH: ${{ github.workspace }}/xpressmp/bin/xpauth.xpr
+      SIRIUS_RELEASE_TAG: ${{ matrix.sirius-release-tag }}
+      SIRIUS_INSTALL_DIR: ${{ github.workspace }}/sirius_install
+      SIRIUS: ${{ github.workspace }}/sirius_install/bin
+      RELEASE_CREATED: ${{ github.event_name == 'release' && github.event.action == 'created' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-20.04"]
+        cmake: [
+          {shared: OFF, java: OFF, dotnet: OFF, python: OFF, python-version: "3.8",  publish-cxx-or: ON},
+          {shared: ON,  java: ON,  dotnet: ON,  python: OFF, python-version: "3.8",  publish-cxx-or: ON},
+          {shared: ON,  java: OFF, dotnet: OFF, python: ON,  python-version: "3.8",  publish-cxx-or: OFF},
+          {shared: ON,  java: OFF, dotnet: OFF, python: ON,  python-version: "3.9",  publish-cxx-or: OFF},
+          {shared: ON,  java: OFF, dotnet: OFF, python: ON,  python-version: "3.10", publish-cxx-or: OFF},
+        ]
+        sirius: [ON, OFF]
+        sirius-release-tag: [antares-integration-v1.4]
+    steps:
+      - name: Checkout or-tools
+        uses: actions/checkout@v4
+        with:
+          repository: rte-france/or-tools
+          ref: ${{ github.event.inputs.rtefrance_ortools_branch || 'main' }}
+
+      - name: Checkout this repository
+        uses: actions/checkout@v4
+        with:
+          path: "patch"
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.cmake.python-version }}
+
+      - name: Apply patch
+        run: |
+          cp -r patch/* .
+          python patch.py
+
+      - name: Install GCC11 and others
+        shell: bash
+        run:  |
+          sudo apt update
+          sudo apt install gcc-11 g++-11
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 110 --slave /usr/bin/g++ g++ /usr/bin/g++-11 --slave /usr/bin/gcov gcov /usr/bin/gcov-11
+          sudo apt install -yq build-essential lsb-release zlib1g-dev
+
+      - name: Swig install
+        run: |
+          sudo apt install -y swig
+          swig -version
+      - name: Update Path
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - name: install python packages
+        run: >
+          python -m pip install absl-py mypy mypy-protobuf
+      - name: Setup cmake
+        uses: jwlawson/actions-setup-cmake@v1.13
+        with:
+          cmake-version: '3.26.x'
+
+      - name: Setup .NET 6.0
+        if: ${{ matrix.cmake.dotnet == 'ON' }}
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Set-up Xpress with pip for Ubuntu
+        shell: bash
+        run: |
+          python -m pip install "xpress>=9.2,<9.3"
+          echo ${{ env.pythonLocation }}
+          XPRESS_DIR=${{ env.pythonLocation }}/lib/python${{ matrix.cmake.python-version }}/site-packages/xpress
+          echo "XPRESSDIR=$XPRESS_DIR" >> $GITHUB_ENV
+          echo "XPAUTH_PATH=$XPRESS_DIR/license/community-xpauth.xpr" >> $GITHUB_ENV
+          echo "Create symbolic link for XPRESS library file because it is missing in the Python installation"
+          ln -s $XPRESS_DIR/lib/libxprs.so.42 $XPRESS_DIR/lib/libxprs.so
+
+      - name: Download Sirius
+        if: ${{ matrix.sirius == 'ON' }}
+        shell: bash
+        run: |
+          zipfile=${{ matrix.os }}_sirius-solver.zip
+          wget https://github.com/rte-france/sirius-solver/releases/download/${{ env.SIRIUS_RELEASE_TAG }}/$zipfile
+          unzip $zipfile
+          mv "${{ matrix.os }}_sirius-solver-install" sirius_install
+          echo "LD_LIBRARY_PATH=$PWD/sirius_install/lib" >> $GITHUB_ENV
+          echo "SIRIUS_CMAKE_DIR=$PWD/sirius_install/cmake" >> $GITHUB_ENV
+
+      - name: ccache
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ matrix.os }}-${{ matrix.cmake.shared }}-${{ matrix.sirius }}-${{ matrix.cmake.dotnet }}-${{ matrix.cmake.java }}-${{ matrix.cmake.python }}-${{ matrix.cmake.python-version }}
+
+      - name: Check cmake
+        run: cmake --version
+      - name: Configure OR-Tools
+        run: >
+          cmake -S . -B build
+          -DCMAKE_BUILD_TYPE=Release
+          -DBUILD_SHARED_LIBS=${{ matrix.cmake.shared }}
+          -DBUILD_PYTHON=${{ matrix.cmake.python }}
+          -DBUILD_JAVA=${{ matrix.cmake.java }}
+          -DBUILD_DOTNET=${{ matrix.cmake.dotnet }}
+          -DBUILD_EXAMPLES=${{ env.RELEASE_CREATED == 'true' && 'OFF' || 'ON' }}
+          -DBUILD_DEPS=ON
+          -DUSE_SIRIUS=${{ matrix.sirius }}
+          -Dsirius_solver_DIR="${{ env.SIRIUS_CMAKE_DIR }}"
+          -DBUILD_SAMPLES=OFF
+          -DCMAKE_INSTALL_PREFIX="build/install"
+
+      - name: Build OR-Tools Linux
+        run: >
+          cmake
+          --build build
+          --config Release
+          --target all install -j4
+
+      - name: run tests not xpress
+        if: ${{ matrix.cmake.shared == 'ON' && (matrix.cmake.python != 'ON' || matrix.cmake.python-version != '3.8' ) }}
+        working-directory: ./build/
+        run: >
+          ctest
+          -C Release
+          --output-on-failure
+          -E "(_xpress|_sirius|python_init_)"
+
+      - name: run tests xpress
+        working-directory: ./build/
+        run: >
+          ctest 
+          -V 
+          -C Release 
+          --output-on-failure 
+          -R "_xpress" 
+
+      - name: run tests sirius
+        working-directory: ./build/
+        run: >
+          ctest 
+          -V 
+          -C Release 
+          --output-on-failure 
+          -R "sirius"
+
+      - name: set name variables
+        id: names
+        shell: bash
+        run: |
+          SHARED=${{ matrix.cmake.shared }}
+          [ $SHARED == "ON" ] && WITH_SHARED="_shared" || WITH_SHARED="_static"
+          SIRIUS=${{ matrix.sirius }}
+          [ $SIRIUS == "ON" ] && WITH_SIRIUS="_sirius" || WITH_SIRIUS=""
+          OS="_${{ matrix.os }}"
+          APPENDIX="${OS}${WITH_SIRIUS}"
+          echo "appendix=$APPENDIX" >> $GITHUB_OUTPUT
+          APPENDIX_WITH_SHARED="${OS}${WITH_SHARED}${WITH_SIRIUS}"
+          echo "appendix_with_shared=$APPENDIX_WITH_SHARED" >> $GITHUB_OUTPUT
+
+      - name: Get release
+        if: ${{ env.RELEASE_CREATED == 'true' }}
+        id: get_release
+        uses:
+          bruceadams/get-release@v1.3.2
+
+      - name: Prepare OR-Tools install
+        if: ${{ matrix.cmake.publish-cxx-or == 'ON' }}
+        id: or-install
+        shell: bash
+        run: |
+          cd build
+          ARCHIVE_NAME="ortools_cxx${{ steps.names.outputs.appendix_with_shared }}.zip"
+          ARCHIVE_PATH="${{ github.workspace }}/build/${ARCHIVE_NAME}"
+          zip -r "$ARCHIVE_PATH" ./install
+          echo "archive_name=$ARCHIVE_NAME" >> $GITHUB_OUTPUT
+          echo "archive_path=$ARCHIVE_PATH" >> $GITHUB_OUTPUT
+
+      - name: Upload OR-Tools install artifact
+        uses: actions/upload-artifact@v4
+        if: ${{ matrix.cmake.publish-cxx-or == 'ON' }}
+        with:
+          name: ${{ steps.or-install.outputs.archive_name }}
+          path: ${{ steps.or-install.outputs.archive_path }}
+      - name: Publish OR-Tools install asset
+        if:  ${{ env.RELEASE_CREATED == 'true' && matrix.cmake.publish-cxx-or == 'ON' }}
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ steps.or-install.outputs.archive_path }}
+
+      - name: prepare OR-Tools wheel
+        if: ${{ matrix.cmake.python == 'ON' }}
+        id: wheel
+        shell: bash
+        run: |
+          cd ./build/python/dist
+          MY_DIR="ortools_python-${{ matrix.cmake.python-version }}${{ steps.names.outputs.appendix }}"
+          mkdir ${MY_DIR}
+          cp *.whl "${MY_DIR}"
+          ARCHIVE_NAME="${MY_DIR}.zip"
+          ARCHIVE_PATH="${{ github.workspace }}/build/${ARCHIVE_NAME}"
+          zip -r "${ARCHIVE_PATH}" "${MY_DIR}"
+          echo "archive_name=$ARCHIVE_NAME" >> $GITHUB_OUTPUT
+          echo "archive_path=$ARCHIVE_PATH" >> $GITHUB_OUTPUT
+
+      - name: Upload OR-Tools wheel artifact
+        if: ${{ matrix.cmake.python == 'ON' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.wheel.outputs.archive_name }}
+          path: ${{ steps.wheel.outputs.archive_path }}
+      - name: Publish OR-Tools wheel asset
+        if:  ${{ env.RELEASE_CREATED == 'true' && matrix.cmake.python == 'ON' }}
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ steps.wheel.outputs.archive_path }}
+
+      - name: prepare OR-Tools jar
+        if: ${{ matrix.cmake.java == 'ON' }}
+        id: jar
+        shell: bash
+        run: |
+          cd ./build/java
+          MY_DIR="ortools_java${{ steps.names.outputs.appendix }}"
+          mkdir ${MY_DIR}
+          cp ortools-*/target/*.jar "${MY_DIR}"
+          ARCHIVE_NAME="${MY_DIR}.zip"
+          ARCHIVE_PATH="${{ github.workspace }}/build/${ARCHIVE_NAME}"
+          zip -r "${ARCHIVE_PATH}" "${MY_DIR}"
+          echo "archive_name=$ARCHIVE_NAME" >> $GITHUB_OUTPUT
+          echo "archive_path=$ARCHIVE_PATH" >> $GITHUB_OUTPUT
+
+      - name: Upload OR-Tools jar artifact
+        if: ${{ matrix.cmake.java == 'ON' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.jar.outputs.archive_name }}
+          path: ${{ steps.jar.outputs.archive_path }}
+      - name: Publish OR-Tools jar asset
+        if:  ${{ env.RELEASE_CREATED == 'true' && matrix.cmake.java == 'ON' }}
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ steps.jar.outputs.archive_path }}
+
+      - name: prepare OR-Tools dotnet
+        if: ${{ matrix.cmake.dotnet == 'ON' }}
+        id: dotnet
+        shell: bash
+        run: |
+          cd ./build/dotnet/packages/
+          MY_DIR="ortools_dotnet${{ steps.names.outputs.appendix }}"
+          mkdir ${MY_DIR}
+          cp Google.OrTools.*.nupkg "${MY_DIR}"
+          cp Google.OrTools.runtime.*.nupkg "${MY_DIR}"
+          ARCHIVE_NAME="${MY_DIR}.zip"
+          ARCHIVE_PATH="${{ github.workspace }}/build/${ARCHIVE_NAME}"
+          zip -r "${ARCHIVE_PATH}" "${MY_DIR}"
+          echo "archive_name=$ARCHIVE_NAME" >> $GITHUB_OUTPUT
+          echo "archive_path=$ARCHIVE_PATH" >> $GITHUB_OUTPUT
+
+      - name: Upload OR-Tools dotnet artifact
+        if: ${{ matrix.cmake.dotnet == 'ON' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.dotnet.outputs.archive_name }}
+          path: ${{ steps.dotnet.outputs.archive_path }}
+      - name: Publish OR-Tools dotnet asset
+        if:  ${{ env.RELEASE_CREATED == 'true' && matrix.cmake.dotnet == 'ON' }}
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ steps.dotnet.outputs.archive_path }}
