@@ -79,7 +79,7 @@ jobs:
 
       - name: Checkout OR-Tools
         run: |
-          git clone $GITHUB_SERVER_URL/rte-france/or-tools.git -b '${{ github.event.inputs.rtefrance_ortools_branch }}' .
+          git clone $GITHUB_SERVER_URL/rte-france/or-tools.git -b '${{ github.event.inputs.rtefrance_ortools_branch || 'main' }}' .
 
       - name: Checkout this repository
         run: |
