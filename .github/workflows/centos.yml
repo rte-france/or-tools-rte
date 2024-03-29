@@ -1,4 +1,5 @@
-name: CentOS - '${{ github.event.inputs.rtefrance_ortools_branch || 'main' }}'
+name: CentOS
+run-name: Build rte-france/or-tools branch "'${{ github.event.inputs.rtefrance_ortools_branch || 'main' }}'"
 
 on:
   workflow_dispatch:
