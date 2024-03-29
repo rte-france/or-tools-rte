@@ -1,5 +1,5 @@
 name: CentOS
-run-name: rte-france/or-tools-rte@'${{BRANCH_NAME}}' + rte-france/or-tools@'${{ github.event.inputs.rtefrance_ortools_branch || 'main' }}'
+run-name: rte-france/or-tools-rte@'${{github.ref_name}}' + rte-france/or-tools@'${{ github.event.inputs.rtefrance_ortools_branch || 'main' }}'
 
 on:
   workflow_dispatch:
