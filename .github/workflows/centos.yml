@@ -78,8 +78,14 @@ jobs:
           cmake-version: '3.22.x'
 
       - name: Checkout OR-Tools
+        if: ${{ env.RELEASE_CREATED == 'false' }}
         run: |
           git clone $GITHUB_SERVER_URL/rte-france/or-tools.git -b '${{ github.event.inputs.rtefrance_ortools_branch || 'main' }}' .
+
+      - name: Checkout OR-Tools
+        if: ${{ env.RELEASE_CREATED == 'true' }}
+        run: |
+          git clone $GITHUB_SERVER_URL/google/or-tools.git -b 'stable' .
 
       - name: Checkout this repository
         run: |

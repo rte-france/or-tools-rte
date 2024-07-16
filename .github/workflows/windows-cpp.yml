@@ -37,10 +37,18 @@ jobs:
         sirius-release-tag: [ antares-integration-v1.4 ]
     steps:
       - name: Checkout or-tools
+        if: ${{ env.RELEASE_CREATED == 'false' }}
         uses: actions/checkout@v4
         with:
           repository: rte-france/or-tools
           ref: ${{ github.event.inputs.rtefrance_ortools_branch || 'main' }}
+
+      - name: Checkout or-tools
+        if: ${{ env.RELEASE_CREATED == 'true' }}
+        uses: actions/checkout@v4
+        with:
+          repository: google/or-tools
+          ref: 'stable'
 
       - name: Checkout this repository
         uses: actions/checkout@v4
