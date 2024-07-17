@@ -52,12 +52,12 @@ jobs:
           path: "patch"
 
       - name: Setup .NET 6.0
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 6.0.x
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.9"
 
@@ -146,12 +146,6 @@ jobs:
           APPENDIX_WITH_SHARED="${OS}${WITH_SHARED}"
           echo "appendix_with_shared=$APPENDIX_WITH_SHARED" >> $GITHUB_OUTPUT
 
-      - name: Get release
-        if: ${{ env.RELEASE_CREATED == 'true' }}
-        id: get_release
-        uses:
-          bruceadams/get-release@v1.3.2
-
       - name: install zip
         shell: cmd
         run: |
@@ -178,7 +172,7 @@ jobs:
           path: ${{ steps.jar.outputs.archive_path }}
       - name: Publish OR-Tools jar asset
         if:  ${{ env.RELEASE_CREATED == 'true' }}
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: build/${{ steps.jar.outputs.archive_name }}
 
@@ -204,6 +198,6 @@ jobs:
           path: ${{ steps.dotnet.outputs.archive_path }}
       - name: Publish OR-Tools dotnet asset
         if:  ${{ env.RELEASE_CREATED == 'true' }}
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: build/${{ steps.dotnet.outputs.archive_name }}

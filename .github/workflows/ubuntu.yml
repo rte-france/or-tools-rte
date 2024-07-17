@@ -92,7 +92,7 @@ jobs:
         run: >
           python -m pip install absl-py mypy mypy-protobuf
       - name: Setup cmake
-        uses: jwlawson/actions-setup-cmake@v1.13
+        uses: jwlawson/actions-setup-cmake@v2
         with:
           cmake-version: '3.26.x'
 
@@ -195,12 +195,6 @@ jobs:
           APPENDIX_WITH_SHARED="${OS}${WITH_SHARED}${WITH_SIRIUS}"
           echo "appendix_with_shared=$APPENDIX_WITH_SHARED" >> $GITHUB_OUTPUT
 
-      - name: Get release
-        if: ${{ env.RELEASE_CREATED == 'true' }}
-        id: get_release
-        uses:
-          bruceadams/get-release@v1.3.2
-
       - name: Prepare OR-Tools install
         if: ${{ matrix.cmake.publish-cxx-or == 'ON' }}
         id: or-install
@@ -221,7 +215,7 @@ jobs:
           path: ${{ steps.or-install.outputs.archive_path }}
       - name: Publish OR-Tools install asset
         if:  ${{ env.RELEASE_CREATED == 'true' && matrix.cmake.publish-cxx-or == 'ON' }}
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: ${{ steps.or-install.outputs.archive_path }}
 
@@ -248,7 +242,7 @@ jobs:
           path: ${{ steps.wheel.outputs.archive_path }}
       - name: Publish OR-Tools wheel asset
         if:  ${{ env.RELEASE_CREATED == 'true' && matrix.cmake.python == 'ON' }}
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: ${{ steps.wheel.outputs.archive_path }}
 
@@ -275,7 +269,7 @@ jobs:
           path: ${{ steps.jar.outputs.archive_path }}
       - name: Publish OR-Tools jar asset
         if:  ${{ env.RELEASE_CREATED == 'true' && matrix.cmake.java == 'ON' }}
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: ${{ steps.jar.outputs.archive_path }}
 
@@ -303,6 +297,6 @@ jobs:
           path: ${{ steps.dotnet.outputs.archive_path }}
       - name: Publish OR-Tools dotnet asset
         if:  ${{ env.RELEASE_CREATED == 'true' && matrix.cmake.dotnet == 'ON' }}
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: ${{ steps.dotnet.outputs.archive_path }}

@@ -138,12 +138,6 @@ jobs:
           APPENDIX_WITH_SHARED="${OS}${WITH_SHARED}"
           echo "appendix_with_shared=$APPENDIX_WITH_SHARED" >> $GITHUB_OUTPUT
 
-      - name: Get release
-        if: ${{ env.RELEASE_CREATED == 'true' }}
-        id: get_release
-        uses:
-          bruceadams/get-release@v1.3.2
-
       - name: install zip
         shell: cmd
         run: |
@@ -170,6 +164,6 @@ jobs:
           path: ${{ steps.wheel.outputs.archive_path }}
       - name: Publish OR-Tools wheel asset
         if:  ${{ env.RELEASE_CREATED == 'true' }}
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: build/${{ steps.wheel.outputs.archive_name }}

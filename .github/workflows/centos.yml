@@ -75,7 +75,7 @@ jobs:
           python3 -m pip install --upgrade pip
           python3 -m pip install dataclasses
       - name: Setup cmake
-        uses: jwlawson/actions-setup-cmake@v1.13
+        uses: jwlawson/actions-setup-cmake@v2
         with:
           cmake-version: '3.22.x'
 
@@ -177,6 +177,6 @@ jobs:
           path: ${{ steps.or-install.outputs.archive_path }}
       - name: Publish OR-Tools install asset
         if: ${{ env.RELEASE_CREATED == 'true' }}
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: ${{ steps.or-install.outputs.archive_path }}
