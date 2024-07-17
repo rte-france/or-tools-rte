@@ -63,7 +63,9 @@ jobs:
           echo "appendix_with_shared=$APPENDIX_WITH_SHARED" >> $GITHUB_OUTPUT
 
       # Fill variable ${BRANCH_NAME}
-      - uses: nelonoel/branch-name@v1.0.1
+      - name: Get branch names
+        id: branch-names
+        uses: tj-actions/branch-names@v8
 
       - name: Install requirements (yum)
         run: |
@@ -89,7 +91,7 @@ jobs:
 
       - name: Checkout this repository
         run: |
-          git clone $GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git -b ${BRANCH_NAME} "patch"
+          git clone $GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git -b ${{ steps.branch-names.outputs.current_branch }} "patch"
 
       - name: Apply patch
         run: |
