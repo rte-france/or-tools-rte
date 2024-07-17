@@ -23,7 +23,7 @@ env:
 
 jobs:
   build:
-    name: Windows java and dotnet
+    name: Windows without Sirius java and dotnet
     runs-on: windows-latest
     env:
       XPRESSDIR: ${{ github.workspace }}\xpressmp
@@ -46,11 +46,6 @@ jobs:
           repository: google/or-tools
           ref: 'stable'
 
-      - name: Checkout this repository
-        uses: actions/checkout@v4
-        with:
-          path: "patch"
-
       - name: Setup .NET 6.0
         uses: actions/setup-dotnet@v4
         with:
@@ -60,12 +55,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.9"
-
-      - name: Apply patch
-        shell: bash
-        run: |
-          cp -r patch/* .
-          python patch.py
 
       - name: Install SWIG 4.1.1
         run: |
@@ -96,7 +85,7 @@ jobs:
           -DBUILD_JAVA=ON
           -DBUILD_DOTNET=ON
           -DBUILD_EXAMPLES=${{ env.RELEASE_CREATED == 'true' && 'OFF' || 'ON' }}
-          -DBUILD_CXX_SAMPLES=OFF
+          -DBUILD_CXX_SAMPLES=OFF -DBUILD_CXX_EXAMPLES=OFF
           -DBUILD_SAMPLES=OFF
           -DCMAKE_INSTALL_PREFIX=install
           -DBUILD_FLATZINC=OFF

@@ -103,7 +103,7 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release
           -DBUILD_SAMPLES=OFF 
           -DBUILD_EXAMPLES=${{ env.RELEASE_CREATED == 'true' && 'OFF' || 'ON' }}
-          -DBUILD_CXX_SAMPLES=OFF
+          -DBUILD_CXX_SAMPLES=OFF  -DBUILD_CXX_EXAMPLES=OFF
           -DBUILD_PYTHON=ON
           -DBUILD_SAMPLES=OFF
 
