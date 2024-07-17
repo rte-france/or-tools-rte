@@ -876,8 +876,7 @@ ENDATA
 }  // namespace operations_research
 
 int main(int argc, char** argv) {
-  absl::SetFlag(&FLAGS_logtostderr, 1);
-  testing::InitGoogleTest(&argc, argv);
-
-  return RUN_ALL_TESTS();
+    absl::SetFlag(&FLAGS_stderrthreshold, 0);
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }
