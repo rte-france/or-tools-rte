@@ -84,10 +84,10 @@ jobs:
 
       - name: retrieve install from docker
         run: |
-          container_id=\$(docker create centos:shared-${{ matrix.shared }}-sirius-${{ matrix.sirius }})
+          container_id=$(docker create centos:shared-${{ matrix.shared }}-sirius-${{ matrix.sirius }})
           rm -rf ./install
-          docker cp \$container_id:/home/project/build/install ./install
-          docker rm \$container_id
+          docker cp $container_id:/home/project/build/install ./install
+          docker rm $container_id
 
       - name: Prepare OR-Tools install
         id: or-install
