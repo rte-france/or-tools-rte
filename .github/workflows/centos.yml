@@ -36,6 +36,10 @@ jobs:
         shared: [ON, OFF]
 
     steps:
+      - name: Get branch names
+        id: branch-names
+        uses: tj-actions/branch-names@v8
+
       - name: set name variables
         id: names
         run: |
