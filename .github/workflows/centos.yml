@@ -80,7 +80,7 @@ jobs:
           --build-arg="SIRIUS=${{ matrix.sirius }}" \
           --build-arg="SHARED=${{ matrix.shared }}" \
           --build-arg="SIRIUS_RELEASE_TAG=${{ env.SIRIUS_RELEASE_TAG }}" \
-          --build-arg="INSTALL_PATH=/my_build/install"
+          --build-arg="INSTALL_PATH=/my_build/install" \
           -f docker/centos.dockerfile .
 
       - name: retrieve install from docker
