@@ -81,9 +81,6 @@ jobs:
           python3 -m pip install --upgrade pip
           python3 -m pip install dataclasses
       - name: Setup cmake
-        uses: jwlawson/actions-setup-cmake@v2
-        with:
-          cmake-version: '3.22.x'
         run : |
           wget --no-verbose "https://devin-depot.rte-france.com/repository/cmake/v3.27/cmake-3.27.0-linux-x86_64.sh" 
           chmod a+x cmake-3.*-linux-x86_64.sh 
