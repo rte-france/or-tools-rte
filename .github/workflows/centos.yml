@@ -49,11 +49,6 @@ jobs:
           echo "appendix=$APPENDIX" >> $GITHUB_OUTPUT
           echo "appendix_with_shared=$APPENDIX_WITH_SHARED" >> $GITHUB_OUTPUT
 
-      # Fill variable ${BRANCH_NAME}
-      - name: Get branch names
-        id: branch-names
-        uses: tj-actions/branch-names@v8
-
       - name: Checkout OR-Tools
         if: ${{ env.RELEASE_CREATED == 'false' }}
         run: |
@@ -81,13 +76,14 @@ jobs:
           --build-arg="SIRIUS=${{ matrix.sirius }}" \
           --build-arg="SHARED=${{ matrix.shared }}" \
           --build-arg="SIRIUS_RELEASE_TAG=${{ env.SIRIUS_RELEASE_TAG }}" \
+          --build-arg="INSTALL_PATH=/my_build/install"
           -f docker/centos.dockerfile .
 
       - name: retrieve install from docker
         run: |
           container_id=$(docker create centos:shared-${{ matrix.shared }}-sirius-${{ matrix.sirius }})
           rm -rf ./install
-          docker cp $container_id:/home/project/build/install ./install
+          docker cp $container_id:/my_build/install ./install
           docker rm $container_id
 
       - name: Prepare OR-Tools install
@@ -100,7 +96,7 @@ jobs:
           echo "archive_path=$ARCHIVE_PATH" >> $GITHUB_OUTPUT
 
       - name: Upload OR-Tools install artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.or-install.outputs.archive_name }}
           path: ${{ steps.or-install.outputs.archive_path }}

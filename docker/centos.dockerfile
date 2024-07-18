@@ -29,9 +29,7 @@ RUN wget -q "https://cmake.org/files/v3.28/cmake-3.28.3-linux-x86_64.sh" \
 CMD [ "/usr/bin/bash" ]
 
 ARG SIRIUS_RELEASE_TAG=antares-integration-v1.4
-ARG SIRIUS=OFF
-ARG SHARED=ON
-ARG BUILD_EXAMPLES=OFF
+
 # Download Sirius
 RUN cd /applis &&\
     zipfile=centos-7_sirius-solver.zip &&\
@@ -54,6 +52,10 @@ RUN cd /applis &&\
     ln -s $XPRESS_DIR/lib/libxprs.so.42 $XPRESS_DIR/lib/libxprs.so
 
 FROM base AS devel
+ARG SIRIUS=OFF
+ARG SHARED=ON
+ARG BUILD_EXAMPLES=OFF
+ARG INSTALL_PATH=/build/install
 WORKDIR /home/project
 COPY . .
 FROM devel AS build
@@ -62,7 +64,7 @@ RUN cmake -S. -Bbuild \
     -DBUILD_SHARED_LIBS=${SHARED} \
     -DUSE_SIRIUS=${SIRIUS}\
     -DBUILD_EXAMPLES=${BUILD_EXAMPLES}\
-    -DCMAKE_INSTALL_PREFIX="build/install" \
+    -DCMAKE_INSTALL_PREFIX=${INSTALL_PATH} \
     -DBUILD_SAMPLES=OFF \
     -DBUILD_FLATZINC=OFF \
     -Dsirius_solver_DIR="$SIRIUS_CMAKE_DIR"
