@@ -56,6 +56,7 @@ ARG SIRIUS=OFF
 ARG SHARED=ON
 ARG BUILD_EXAMPLES=OFF
 ARG INSTALL_PATH=/build/install
+RUN mkdir ${INSTALL_PATH}
 WORKDIR /home/project
 COPY . .
 FROM devel AS build
