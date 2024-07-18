@@ -36,10 +36,6 @@ jobs:
         shared: [ON, OFF]
 
     steps:
-      - name: Get branch names
-        id: branch-names
-        uses: tj-actions/branch-names@v8
-
       - name: set name variables
         id: names
         run: |
@@ -52,6 +48,10 @@ jobs:
           APPENDIX_WITH_SHARED="${OS}${WITH_SHARED}${WITH_SIRIUS}"
           echo "appendix=$APPENDIX" >> $GITHUB_OUTPUT
           echo "appendix_with_shared=$APPENDIX_WITH_SHARED" >> $GITHUB_OUTPUT
+
+      - name: Get branch names
+        id: branch-names
+        uses: tj-actions/branch-names@v8
 
       - name: Checkout OR-Tools
         if: ${{ env.RELEASE_CREATED == 'false' }}
@@ -87,7 +87,7 @@ jobs:
         run: |
           container_id=$(docker create centos:shared-${{ matrix.shared }}-sirius-${{ matrix.sirius }})
           rm -rf ./install
-          docker cp $container_id:/my_build/install ./install
+          docker cp $container_id:/my-build/install ./install
           docker rm $container_id
 
       - name: Prepare OR-Tools install
