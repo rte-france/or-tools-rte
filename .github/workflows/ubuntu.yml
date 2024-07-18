@@ -1,4 +1,5 @@
 name: Ubuntu
+run-name: rte-france/or-tools-rte@'${{github.ref_name}}' + rte-france/or-tools@'${{ github.event.inputs.rtefrance_ortools_branch || 'main' }}'
 
 on:
   workflow_dispatch:
