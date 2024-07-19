@@ -36,36 +36,24 @@ jobs:
         shared: [ON, OFF]
 
     steps:
-      - name: set name variables
-        id: names
-        run: |
-          SHARED=${{ matrix.shared }}
-          [ $SHARED == "ON" ] && WITH_SHARED="_shared" || WITH_SHARED="_static"
-          SIRIUS=${{ matrix.sirius }}
-          [ $SIRIUS == "ON" ] && WITH_SIRIUS="_sirius" || WITH_SIRIUS=""
-          OS="_centos7"
-          APPENDIX="${OS}${WITH_SIRIUS}"
-          APPENDIX_WITH_SHARED="${OS}${WITH_SHARED}${WITH_SIRIUS}"
-          echo "appendix=$APPENDIX" >> $GITHUB_OUTPUT
-          echo "appendix_with_shared=$APPENDIX_WITH_SHARED" >> $GITHUB_OUTPUT
-
-      - name: Get branch names
-        id: branch-names
-        uses: tj-actions/branch-names@v8
-
-      - name: Checkout OR-Tools
+      - name: Checkout or-tools rte-france
         if: ${{ env.RELEASE_CREATED == 'false' }}
-        run: |
-          git clone $GITHUB_SERVER_URL/rte-france/or-tools.git -b '${{ github.event.inputs.rtefrance_ortools_branch || 'main' }}' .
+        uses: actions/checkout@v4
+        with:
+          repository: rte-france/or-tools
+          ref: ${{ github.event.inputs.rtefrance_ortools_branch || 'main' }}
 
-      - name: Checkout OR-Tools
+      - name: Checkout or-tools google
         if: ${{ env.RELEASE_CREATED == 'true' }}
-        run: |
-          git clone $GITHUB_SERVER_URL/google/or-tools.git -b 'stable' .
+        uses: actions/checkout@v4
+        with:
+          repository: google/or-tools
+          ref: 'stable'
 
       - name: Checkout this repository
-        run: |
-          git clone $GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git -b ${{ steps.branch-names.outputs.current_branch }} "patch"
+        uses: actions/checkout@v4
+        with:
+          path: "patch"
 
       - name: Apply patch
         run: |
@@ -80,15 +68,27 @@ jobs:
           --build-arg="SIRIUS=${{ matrix.sirius }}" \
           --build-arg="SHARED=${{ matrix.shared }}" \
           --build-arg="SIRIUS_RELEASE_TAG=${{ env.SIRIUS_RELEASE_TAG }}" \
-          --build-arg="INSTALL_PATH=/my_build/install" \
           -f docker/centos.dockerfile .
 
       - name: retrieve install from docker
         run: |
           container_id=$(docker create centos:shared-${{ matrix.shared }}-sirius-${{ matrix.sirius }})
           rm -rf ./install
-          docker cp $container_id:/my-build/install ./install
+          docker cp $container_id:/home/project/install ./install
           docker rm $container_id
+
+      - name: set name variables
+        id: names
+        run: |
+          SHARED=${{ matrix.shared }}
+          [ $SHARED == "ON" ] && WITH_SHARED="_shared" || WITH_SHARED="_static"
+          SIRIUS=${{ matrix.sirius }}
+          [ $SIRIUS == "ON" ] && WITH_SIRIUS="_sirius" || WITH_SIRIUS=""
+          OS="_centos7"
+          APPENDIX="${OS}${WITH_SIRIUS}"
+          APPENDIX_WITH_SHARED="${OS}${WITH_SHARED}${WITH_SIRIUS}"
+          echo "appendix=$APPENDIX" >> $GITHUB_OUTPUT
+          echo "appendix_with_shared=$APPENDIX_WITH_SHARED" >> $GITHUB_OUTPUT
 
       - name: Prepare OR-Tools install
         id: or-install
