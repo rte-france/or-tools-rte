@@ -3,7 +3,8 @@
 This repository contains RTE-specific developments for [OR-Tools](https://github.com/google/or-tools):  
 - Support for [SIRIUS](https://github.com/rte-france/sirius-solver) solver
 - Customized CI & releases
-- Scripting tool for XPRESS, used to update the XPRESS MPsolver implementation 
+- Scripting tool for XPRESS, used to update the XPRESS MPsolver implementation
+- A simple bash script (not tested by the CI) that allows to test the patch on a linux machine (doc inside)
 
 ## Technical overview
 This repository aims to build a code with the same structure as the [original code of OR-Tools](https://github.com/google/or-tools-rte), 
