@@ -58,7 +58,7 @@ jobs:
         if: ${{ env.RELEASE_CREATED == 'true' }}
         uses: actions/checkout@v4
         with:
-          repository: google/or-tools
+          repository: rte-france/or-tools
           ref: 'stable'
 
       - name: Checkout this repository
