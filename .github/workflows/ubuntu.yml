@@ -32,7 +32,7 @@ jobs:
       SIRIUS_RELEASE_TAG: ${{ matrix.sirius-release-tag }}
       SIRIUS_INSTALL_DIR: ${{ github.workspace }}/sirius_install
       SIRIUS: ${{ github.workspace }}/sirius_install/bin
-      RELEASE_CREATED: true
+      RELEASE_CREATED: false
     strategy:
       fail-fast: false
       matrix:
