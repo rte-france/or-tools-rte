@@ -47,6 +47,7 @@ jobs:
         sirius: [ON, OFF]
         sirius-release-tag: [antares-integration-v1.4]
     steps:
+      - run: echo "ping"
       - name: Checkout or-tools
         if: ${{ env.RELEASE_CREATED == 'false' }}
         uses: actions/checkout@v4
