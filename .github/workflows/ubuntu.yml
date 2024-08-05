@@ -53,14 +53,14 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: rte-france/or-tools
-          ref: v9.10
+          ref: v9.8-rte1.1
 
       - name: Checkout or-tools
         if: ${{ env.RELEASE_CREATED == 'true' }}
         uses: actions/checkout@v4
         with:
           repository: rte-france/or-tools
-          ref: v9.10
+          ref: v9.8-rte1.1
 
       - name: Checkout this repository
         uses: actions/checkout@v4
