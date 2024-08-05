@@ -142,7 +142,7 @@ jobs:
           -DBUILD_PYTHON=${{ matrix.cmake.python }}
           -DBUILD_JAVA=${{ matrix.cmake.java }}
           -DBUILD_DOTNET=${{ matrix.cmake.dotnet }}
-          -DBUILD_EXAMPLES=${{ env.RELEASE_CREATED == 'true' && 'OFF' || 'ON' }}
+          -DBUILD_EXAMPLES=OFF
           -DBUILD_DEPS=ON
           -DUSE_SIRIUS=${{ matrix.sirius }}
           -Dsirius_solver_DIR="${{ env.SIRIUS_CMAKE_DIR }}"
