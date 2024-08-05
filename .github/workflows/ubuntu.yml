@@ -10,11 +10,6 @@ on:
         default: 'main'
   push:
     branches:
-      - main
-      - feature/*
-      - merge*
-      - fix/*
-      - release/*
   release:
     types: [ created ]
 
@@ -38,10 +33,6 @@ jobs:
         os: ["ubuntu-20.04"]
         cmake: [
           {shared: OFF, java: OFF, dotnet: OFF, python: OFF, python-version: "3.8",  publish-cxx-or: ON},
-          {shared: ON,  java: ON,  dotnet: ON,  python: OFF, python-version: "3.8",  publish-cxx-or: ON},
-          {shared: ON,  java: OFF, dotnet: OFF, python: ON,  python-version: "3.8",  publish-cxx-or: OFF},
-          {shared: ON,  java: OFF, dotnet: OFF, python: ON,  python-version: "3.9",  publish-cxx-or: OFF},
-          {shared: ON,  java: OFF, dotnet: OFF, python: ON,  python-version: "3.10", publish-cxx-or: OFF},
         ]
         sirius: [ON, OFF]
         sirius-release-tag: [antares-integration-v1.4]
