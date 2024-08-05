@@ -32,7 +32,7 @@ jobs:
       SIRIUS_RELEASE_TAG: ${{ matrix.sirius-release-tag }}
       SIRIUS_INSTALL_DIR: ${{ github.workspace }}/sirius_install
       SIRIUS: ${{ github.workspace }}/sirius_install/bin
-      RELEASE_CREATED: ${{ github.event_name == 'release' && github.event.action == 'created' }}
+      RELEASE_CREATED: true
     strategy:
       fail-fast: false
       matrix:
@@ -59,7 +59,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: google/or-tools
-          ref: 'stable'
+          ref: 'v9.10'
 
       - name: Checkout this repository
         uses: actions/checkout@v4
