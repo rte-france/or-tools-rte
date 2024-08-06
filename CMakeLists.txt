@@ -6,10 +6,10 @@ FetchContent_Declare(ortools
         GIT_REPOSITORY https://github.com/google/or-tools.git
         GIT_TAG v9.10
         PATCH_COMMAND cp -rf
-            ${CMAKE_SOURCE_DIR}/patch.py
-            ${CMAKE_SOURCE_DIR}/patch_utils.py
-            ${CMAKE_SOURCE_DIR}/ortools
-            ${CMAKE_SOURCE_DIR}/patchs
+            ${CMAKE_CURRENT_SOURCE_DIR}/patch.py
+            ${CMAKE_CURRENT_SOURCE_DIR}/patch_utils.py
+            ${CMAKE_CURRENT_SOURCE_DIR}/ortools
+            ${CMAKE_CURRENT_SOURCE_DIR}/patchs
             . && python patch.py
 )
 set(BUILD_DEPS "ON" CACHE INTERNAL "")
