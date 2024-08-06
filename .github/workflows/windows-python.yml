@@ -107,7 +107,7 @@ jobs:
           -DBUILD_CXX_SAMPLES=OFF  -DBUILD_CXX_EXAMPLES=OFF
           -DBUILD_PYTHON=ON
           -DBUILD_SAMPLES=OFF
-          -DBUILD_HIGHS=OFF
+          -DUSE_HIGHS=OFF
 
       - name: Build
         run: >
