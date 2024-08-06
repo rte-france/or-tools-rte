@@ -147,6 +147,7 @@ jobs:
           -Dsirius_solver_DIR="${{ env.SIRIUS_CMAKE_DIR }}"
           -DBUILD_SAMPLES=OFF
           -DCMAKE_INSTALL_PREFIX="build/install"
+          -DBUILD_HIGHS=OFF
 
       - name: Build OR-Tools Linux
         run: >

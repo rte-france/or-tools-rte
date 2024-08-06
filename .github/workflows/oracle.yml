@@ -161,6 +161,7 @@ jobs:
             -DCMAKE_INSTALL_PREFIX="build/install" \
             -DBUILD_SAMPLES=OFF \
             -DBUILD_FLATZINC=OFF
+            -DBUILD_HIGHS=OFF
 
       - name: Build OR-Tools Linux
         run: |
