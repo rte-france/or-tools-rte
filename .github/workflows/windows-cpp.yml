@@ -101,6 +101,7 @@ jobs:
           -DBUILD_SAMPLES=OFF 
           -DCMAKE_INSTALL_PREFIX=install
           -DUSE_SIRIUS=${{ matrix.sirius }}
+          -DBUILD_HIGHS=OFF
 
       - name: Build
         run: >
