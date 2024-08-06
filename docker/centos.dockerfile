@@ -67,7 +67,7 @@ RUN cmake -S. -Bbuild \
     -DBUILD_SAMPLES=OFF \
     -DBUILD_FLATZINC=OFF \
     -Dsirius_solver_DIR="$SIRIUS_CMAKE_DIR" \
-    -DBUILD_HIGHS=OFF \
+    -DUSE_HIGHS=OFF \
 
 RUN cmake --build build --target all -j4
 RUN cmake --build build --target install
