@@ -11,6 +11,7 @@ FetchContent_Declare(ortools
             ${CMAKE_CURRENT_SOURCE_DIR}/ortools
             ${CMAKE_CURRENT_SOURCE_DIR}/patchs
             . && python patch.py
+        OVERRIDE_FIND_PACKAGE ON
 )
 set(BUILD_DEPS "ON" CACHE INTERNAL "")
 set(BUILD_SAMPLES "OFF" CACHE INTERNAL "")
@@ -25,4 +26,4 @@ set(BUILD_SHARED_LIBS "OFF" CACHE INTERNAL "")
 # So we need to activate Sirius in or-tools configuration (OFF by default)
 set(USE_SIRIUS "ON" CACHE INTERNAL "")
 FetchContent_MakeAvailable(ortools)
-message("PLOP4")
+find_package(ortools REQUIRED)
