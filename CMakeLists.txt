@@ -1,10 +1,9 @@
 project(ortools-rte)
 message("PLOP")
 include(FetchContent)
-include(ExternalProject)
 FetchContent_Declare(ortools
-        GIT_REPOSITORY https://github.com/google/or-tools.git
-        GIT_TAG v9.10
+        GIT_REPOSITORY "https://github.com/google/or-tools.git"
+        GIT_TAG "v9.10"
         FETCHCONTENT_QUIET FALSE
         LOG_DOWNLOAD ON
         LOG_PATCH ON
