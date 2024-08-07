@@ -62,6 +62,7 @@ jobs:
 
       - name: Build inside docker
         run: |
+          cp -r patch/docker .
           docker build \
           --target build \
           -t centos:shared-${{ matrix.shared }}-sirius-${{ matrix.sirius }} \
