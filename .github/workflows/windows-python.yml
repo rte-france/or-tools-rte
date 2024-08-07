@@ -69,7 +69,7 @@ jobs:
       - name: Apply patch
         shell: bash
         run: |
-          cp -r patch/* .
+          cp -r patch/ortools patch/patch.py patch/patch_utils.py .
           python patch.py
 
       - name: Install SWIG 4.1.1

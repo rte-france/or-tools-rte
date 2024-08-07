@@ -47,6 +47,7 @@ endif()
     '''
 #add SIRIUS
 if (USE_SIRIUS)
+  include(patchs/sirius.cmake)
   if(POLICY CMP0074)
     cmake_policy(SET CMP0074 NEW)
   endif()

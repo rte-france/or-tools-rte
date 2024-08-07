@@ -123,7 +123,7 @@ jobs:
 
       - name: Apply patch
         run: |
-          cp -r patch/* .
+          cp -r patch/ortools patch/patch.py patch/patch_utils.py .
           python3 patch.py
 
       - name: Set-up Xpress with pip

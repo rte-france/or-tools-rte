@@ -30,3 +30,15 @@ in the [actions](https://github.com/rte-france/or-tools-rte/actions) section. Th
 # Scripting tool for XPRESS
 The script file [parse_header_xpress.py](ortools/xpress/parse_header_xpress.py) allows maintainers of the XPRESS MPSolver 
 implementation to easily update the implementation for new versions of XPRESS.
+
+# Developing as a CMake project
+This project can be used as a CMake project. It will fetch ortools and apply the patches.
+Two variables must be set at configure time:
+- `ortools_REPO` url of ortools repository
+- `ortools_REF` commit hash to use
+
+Sirius dependency can be provided through CMAKE_PREFIX_PATH otherwise it will be fetched automatically
+
+Fetching the dependencies the first time can be long, but it will be cached for the next builds.
+
+A target `ortools-rte` is created and can be used to build the project. However, it will rebuild ortools.
