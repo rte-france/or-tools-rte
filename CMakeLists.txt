@@ -9,8 +9,8 @@ endfunction()
 set_if_not_defined(ortools_REPO "https://github.com/google/or-tools.git" )
 set_if_not_defined(ortools_REF "v9.10" )
 FetchContent_Declare(ortools
-        GIT_REPOSITORY https://github.com/google/or-tools.git
-        GIT_TAG v9.10
+        GIT_REPOSITORY ${ortools_REPO}
+        GIT_TAG ${ortools_REF}
         PATCH_COMMAND cp -rf
             ${CMAKE_CURRENT_SOURCE_DIR}/patch.py
             ${CMAKE_CURRENT_SOURCE_DIR}/patch_utils.py
