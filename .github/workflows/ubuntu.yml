@@ -32,7 +32,7 @@ jobs:
       SIRIUS_RELEASE_TAG: ${{ matrix.sirius-release-tag }}
       SIRIUS_INSTALL_DIR: ${{ github.workspace }}/sirius_install
       SIRIUS: ${{ github.workspace }}/sirius_install/bin
-      RELEASE_CREATED: false
+      RELEASE_CREATED: ${{ github.event_name == 'release' && github.event.action == 'created' }}
     strategy:
       fail-fast: false
       matrix:
@@ -44,23 +44,22 @@ jobs:
           {shared: ON,  java: OFF, dotnet: OFF, python: ON,  python-version: "3.9",  publish-cxx-or: OFF},
           {shared: ON,  java: OFF, dotnet: OFF, python: ON,  python-version: "3.10", publish-cxx-or: OFF},
         ]
-        sirius: [ON]
+        sirius: [ON, OFF]
         sirius-release-tag: [antares-integration-v1.4]
     steps:
-      - run: echo "ping"
       - name: Checkout or-tools
         if: ${{ env.RELEASE_CREATED == 'false' }}
         uses: actions/checkout@v4
         with:
           repository: rte-france/or-tools
-          ref: v9.8-rte1.1
+          ref: ${{ github.event.inputs.rtefrance_ortools_branch || 'main' }}
 
       - name: Checkout or-tools
         if: ${{ env.RELEASE_CREATED == 'true' }}
         uses: actions/checkout@v4
         with:
-          repository: rte-france/or-tools
-          ref: v9.8-rte1.1
+          repository: google/or-tools
+          ref: 'stable'
 
       - name: Checkout this repository
         uses: actions/checkout@v4
@@ -143,7 +142,7 @@ jobs:
           -DBUILD_PYTHON=${{ matrix.cmake.python }}
           -DBUILD_JAVA=${{ matrix.cmake.java }}
           -DBUILD_DOTNET=${{ matrix.cmake.dotnet }}
-          -DBUILD_EXAMPLES=OFF
+          -DBUILD_EXAMPLES=${{ env.RELEASE_CREATED == 'true' && 'OFF' || 'ON' }}
           -DBUILD_DEPS=ON
           -DUSE_SIRIUS=${{ matrix.sirius }}
           -Dsirius_solver_DIR="${{ env.SIRIUS_CMAKE_DIR }}"
