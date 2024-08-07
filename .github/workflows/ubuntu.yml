@@ -15,7 +15,6 @@ on:
       - merge*
       - fix/*
       - release/*
-    pull_request:
   release:
     types: [ created ]
 
