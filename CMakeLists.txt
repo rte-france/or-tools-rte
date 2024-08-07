@@ -6,8 +6,12 @@ function(set_if_not_defined var default_value)
         set(${var} ${default_value} CACHE INTERNAL "")
     endif()
 endfunction()
-set_if_not_defined(ortools_REPO "https://github.com/google/or-tools.git" )
-set_if_not_defined(ortools_REF "v9.10" )
+if (NOT DEFINED ortools_REPO)
+    message(FATAL_ERROR "ortools_REPO is not defined")
+endif ()
+if (NOT DEFINED ortools_REF)
+    message(FATAL_ERROR "ortools_REF is not defined")
+endif ()
 FetchContent_Declare(ortools
         GIT_REPOSITORY ${ortools_REPO}
         GIT_TAG ${ortools_REF}
@@ -34,3 +38,7 @@ set_if_not_defined(BUILD_SHARED_LIBS "OFF" CACHE INTERNAL "")
 set_if_not_defined(USE_SIRIUS "ON" CACHE INTERNAL "")
 FetchContent_MakeAvailable(ortools)
 find_package(ortools REQUIRED)
+
+add_custom_target(ortools-rte
+        DEPENDS ortools
+)
