@@ -113,7 +113,7 @@ class XpressHeaderParser(object):
                                      "XPRSgetmipsol", "XPRSchgbounds", "XPRSchgobj", "XPRSchgcoef", "XPRSchgmcoef",
                                      "XPRSchgrhs", "XPRSchgrhsrange", "XPRSchgrowtype", "XPRSaddcbmessage", "XPRSsetcbmessage",
                                      "XPRSaddmipsol", "XPRSaddcbintsol", "XPRSremovecbintsol",
-                                     "XPRSinterrupt", "XPRSlpoptimize", "XPRSmipoptimize"}
+                                     "XPRSinterrupt", "XPRSlpoptimize", "XPRSmipoptimize", "XPRSsetindicators"}
         self.__missing_required_functions = self.__required_functions
         self.__XPRSprob_section = False
 
