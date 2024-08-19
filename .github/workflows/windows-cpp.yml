@@ -49,7 +49,7 @@ jobs:
         if: ${{ env.RELEASE_CREATED == 'true' }}
         shell: bash
         run: |
-          OR_REPO="https://github.com/google/or-tools"
+          OR_REPO="https://github.com/google/or-tools.git"
           OR_REF="stable"
           echo "OR_REPO=$OR_REPO" >> $GITHUB_ENV
           echo "OR_REF=$OR_REF" >> $GITHUB_ENV
@@ -58,7 +58,7 @@ jobs:
         if: ${{ env.RELEASE_CREATED == 'false' }}
         shell: bash
         run: |
-          OR_REPO="https://github.com/rte-france/or-tools"
+          OR_REPO="https://github.com/rte-france/or-tools.git"
           OR_REF=${{ github.event.inputs.rtefrance_ortools_branch || 'main' }}
           echo "OR_REPO=$OR_REPO" >> $GITHUB_ENV
           echo "OR_REF=$OR_REF" >> $GITHUB_ENV
