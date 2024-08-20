@@ -225,7 +225,7 @@ jobs:
         id: wheel
         shell: bash
         run: |
-          cd ./build/python/dist
+          cd ./build/_deps/ortools-build/python/dist
           MY_DIR="ortools_python-${{ matrix.cmake.python-version }}${{ steps.names.outputs.appendix }}"
           mkdir ${MY_DIR}
           cp *.whl "${MY_DIR}"
@@ -252,7 +252,7 @@ jobs:
         id: jar
         shell: bash
         run: |
-          cd ./build/java
+          cd ./build/_deps/ortools-build/java
           MY_DIR="ortools_java${{ steps.names.outputs.appendix }}"
           mkdir ${MY_DIR}
           cp ortools-*/target/*.jar "${MY_DIR}"
@@ -279,7 +279,7 @@ jobs:
         id: dotnet
         shell: bash
         run: |
-          cd ./build/dotnet/packages/
+          cd ./build/_deps/ortools-build/dotnet/packages/
           MY_DIR="ortools_dotnet${{ steps.names.outputs.appendix }}"
           mkdir ${MY_DIR}
           cp Google.OrTools.*.nupkg "${MY_DIR}"
