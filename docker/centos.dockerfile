@@ -55,10 +55,14 @@ FROM base AS devel
 ARG SIRIUS=OFF
 ARG SHARED=ON
 ARG BUILD_EXAMPLES=OFF
+ARG OR_REPO="https://github.com/rte-france/or-tools.git"
+ARG OR_REF="stable"
 WORKDIR /home/project
 COPY . .
 FROM devel AS build
 RUN cmake -S. -Bbuild \
+    -Dortools_REPO=${OR_REPO} \
+    -Dortools_REF=${OR_REF} \
     -DBUILD_DEPS=ON \
     -DBUILD_SHARED_LIBS=${SHARED} \
     -DUSE_SIRIUS=${SIRIUS}\
