@@ -12,7 +12,7 @@ endif ()
 if (NOT DEFINED ortools_REF)
     message(FATAL_ERROR "ortools_REF is not defined")
 endif ()
-find_package (Python REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module
 message("found PYTHON interpreter ${Python_EXECUTABLE} = " ${Python_EXECUTABLE})
 FetchContent_Declare(ortools
         GIT_REPOSITORY ${ortools_REPO}
@@ -22,7 +22,7 @@ FetchContent_Declare(ortools
             ${CMAKE_CURRENT_SOURCE_DIR}/patch_utils.py
             ${CMAKE_CURRENT_SOURCE_DIR}/ortools
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake_patches
-            . && ${Python_EXECUTABLE} patch.py
+            . && ${Python3_EXECUTABLE} patch.py
         OVERRIDE_FIND_PACKAGE ON
 )
 message("BUILD_DEPS: " ${BUILD_DEPS})
