@@ -21,7 +21,7 @@ FetchContent_Declare(ortools
             ${CMAKE_CURRENT_SOURCE_DIR}/patch.py
             ${CMAKE_CURRENT_SOURCE_DIR}/patch_utils.py
             ${CMAKE_CURRENT_SOURCE_DIR}/ortools
-            ${CMAKE_CURRENT_SOURCE_DIR}/patchs
+            ${CMAKE_CURRENT_SOURCE_DIR}/cmake_patches
             . && ${Python_EXECUTABLE} patch.py
         OVERRIDE_FIND_PACKAGE ON
 )
