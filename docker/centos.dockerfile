@@ -55,7 +55,7 @@ FROM base AS devel
 ARG SIRIUS=OFF
 ARG SHARED=ON
 ARG BUILD_EXAMPLES=OFF
-ARG OR_REPO="https://github.com/rte-france/or-tools.git"
+ARG OR_REPO="https://github.com/google/or-tools.git"
 ARG OR_REF="stable"
 WORKDIR /home/project
 COPY . .
