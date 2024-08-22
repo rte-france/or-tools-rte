@@ -50,7 +50,7 @@ jobs:
         shell: bash
         run: |
           OR_REPO="https://github.com/google/or-tools.git"
-          OR_REF="stable"
+          OR_REF="v9.10"
           echo "OR_REPO=$OR_REPO" >> $GITHUB_ENV
           echo "OR_REF=$OR_REF" >> $GITHUB_ENV
 
