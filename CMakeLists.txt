@@ -12,7 +12,7 @@ endif ()
 if (NOT DEFINED ortools_REF)
     message(FATAL_ERROR "ortools_REF is not defined")
 endif ()
-find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module)
 message("found PYTHON interpreter ${Python_EXECUTABLE} = " ${Python_EXECUTABLE})
 FetchContent_Declare(ortools
         GIT_REPOSITORY ${ortools_REPO}
