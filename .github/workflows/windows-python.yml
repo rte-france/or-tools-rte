@@ -149,7 +149,7 @@ jobs:
         id: wheel
         shell: bash
         run: |
-          cd ./build/_deps/ortools-build/python/dist
+          cd ./build/python/dist
           MY_DIR="ortools_python-${{ matrix.python.version }}${{ steps.names.outputs.appendix }}"
           mkdir ${MY_DIR}
           cp *.whl "${MY_DIR}"
