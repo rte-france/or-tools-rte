@@ -59,9 +59,10 @@ jobs:
         shell: bash
         run: |
           OR_REPO="https://github.com/google/or-tools.git"
-          OR_REF="v9.10"
+          TAGNAME="${{ github.event.release.tag_name }}"
+          TAGNAME_WITHOUT_SUFFIX=${TAGNAME%%-*}
           echo "OR_REPO=$OR_REPO" >> $GITHUB_ENV
-          echo "OR_REF=$OR_REF" >> $GITHUB_ENV
+          echo "OR_REF=$TAGNAME_WITHOUT_SUFFIX" >> $GITHUB_ENV
 
       - name: set or-tools repo vars not release
         if: ${{ env.RELEASE_CREATED == 'false' }}
