@@ -47,19 +47,19 @@ jobs:
           echo "OR_REPO=$OR_REPO" >> $GITHUB_ENV
           echo "OR_REF=$TAGNAME_WITHOUT_SUFFIX" >> $GITHUB_ENV
 
-      - name: Checkout or-tools not release
-        if: ${{ env.RELEASE_CREATED == 'false' }}
-        uses: actions/checkout@v4
-        with:
-          repository: rte-france/or-tools
-          ref: ${{ github.event.inputs.rtefrance_ortools_branch || 'main' }}
-
       - name: Checkout or-tools if release
         if: ${{ env.RELEASE_CREATED == 'true' }}
         uses: actions/checkout@v4
         with:
           repository: google/or-tools
           ref: ${{ env.OR_REF }}
+
+      - name: Checkout or-tools not release
+        if: ${{ env.RELEASE_CREATED == 'false' }}
+        uses: actions/checkout@v4
+        with:
+          repository: rte-france/or-tools
+          ref: ${{ github.event.inputs.rtefrance_ortools_branch || 'main' }}
 
       - name: Checkout this repository
         uses: actions/checkout@v4
