@@ -39,7 +39,7 @@ jobs:
           { version: "3.11", dir: Python311 },
         ]
     steps:
-      - name: set or-tools repo vars release
+      - name: set or-tools repo vars if release
         if: ${{ env.RELEASE_CREATED == 'true' }}
         shell: bash
         run: |
@@ -49,19 +49,18 @@ jobs:
           echo "OR_REPO=$OR_REPO" >> $GITHUB_ENV
           echo "OR_REF=$TAGNAME_WITHOUT_SUFFIX" >> $GITHUB_ENV
 
-      - name: set or-tools repo vars not release
+      - name: Checkout or-tools not release
         if: ${{ env.RELEASE_CREATED == 'false' }}
-        shell: bash
-        run: |
-          OR_REPO="https://github.com/rte-france/or-tools.git"
-          OR_REF=${{ github.event.inputs.rtefrance_ortools_branch || 'main' }}
-          echo "OR_REPO=$OR_REPO" >> $GITHUB_ENV
-          echo "OR_REF=$OR_REF" >> $GITHUB_ENV
-
-      - name: Checkout or-tools
         uses: actions/checkout@v4
         with:
-          repository: ${{ env.OR_REPO }}
+          repository: rte-france/or-tools
+          ref: ${{ github.event.inputs.rtefrance_ortools_branch || 'main' }}
+
+      - name: Checkout or-tools if release
+        if: ${{ env.RELEASE_CREATED == 'true' }}
+        uses: actions/checkout@v4
+        with:
+          repository: google/or-tools
           ref: ${{ env.OR_REF }}
 
       - name: Checkout this repository
