@@ -38,7 +38,7 @@ endif()
 
 # add the USE_SIRIUS configuration flag in deps.cmake
 full_patch.append(Addition(
-    Path.cwd()/'cmake'/'deps.cmake',
+    Path.cwd()/'cmake'/'system_deps.cmake',
     '''
 if(USE_CPLEX)
   find_package(CPLEX REQUIRED)
