@@ -32,11 +32,6 @@ set_if_not_defined(BUILD_FLATZINC "OFF" CACHE INTERNAL "")
 set_if_not_defined(BUILD_EXAMPLES "OFF" CACHE INTERNAL "")
 set_if_not_defined(USE_SCIP "ON" CACHE INTERNAL "")
 set_if_not_defined(USE_GLPK "ON" CACHE INTERNAL "")
-# We build OR-Tools as a static lib. Cyclic dependencies are detected
-# without this flag.
-set_if_not_defined(BUILD_SHARED_LIBS "OFF" CACHE INTERNAL "")
-# In mode optimization error analysis, we call Sirius through or-tools
-# So we need to activate Sirius in or-tools configuration (OFF by default)
 set_if_not_defined(USE_SIRIUS "OFF" CACHE INTERNAL "")
 FetchContent_MakeAvailable(ortools)
 find_package(ortools REQUIRED)
