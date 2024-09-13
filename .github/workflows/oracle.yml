@@ -52,9 +52,6 @@ jobs:
           APPENDIX_WITH_SHARED="${OS}${WITH_SHARED}${WITH_SIRIUS}"
           echo "appendix_with_shared=$APPENDIX_WITH_SHARED" >> $GITHUB_OUTPUT
 
-      # Fill variable ${BRANCH_NAME}
-      - uses: nelonoel/branch-name@v1.0.1
-
       - name: Install requirements (dnf)
         run: |
           dnf -y update
@@ -102,29 +99,27 @@ jobs:
         with:
           cmake-version: '3.26.x'
 
-      - name: Checkout or-tools
-        if: ${{ env.RELEASE_CREATED == 'false' }}
-        uses: actions/checkout@v4
-        with:
-          repository: rte-france/or-tools
-          ref: ${{ github.event.inputs.rtefrance_ortools_branch || 'main' }}
-
-      - name: Checkout or-tools
-        if: ${{ env.RELEASE_CREATED == 'true' }}
-        uses: actions/checkout@v4
-        with:
-          repository: google/or-tools
-          ref: 'stable'
-
       - name: Checkout this repository
         uses: actions/checkout@v4
-        with:
-          path: "patch"
 
-      - name: Apply patch
+      - name: set or-tools repo vars release
+        if: ${{ env.RELEASE_CREATED == 'true' }}
+        shell: bash
         run: |
-          cp -r patch/ortools patch/patch.py patch/patch_utils.py .
-          python3 patch.py
+          OR_REPO="https://github.com/google/or-tools.git"
+          TAGNAME="${{ github.event.release.tag_name }}"
+          TAGNAME_WITHOUT_SUFFIX=${TAGNAME%%-*}
+          echo "OR_REPO=$OR_REPO" >> $GITHUB_ENV
+          echo "OR_REF=$TAGNAME_WITHOUT_SUFFIX" >> $GITHUB_ENV
+
+      - name: set or-tools repo vars not release
+        if: ${{ env.RELEASE_CREATED == 'false' }}
+        shell: bash
+        run: |
+          OR_REPO="https://github.com/rte-france/or-tools.git"
+          OR_REF=${{ github.event.inputs.rtefrance_ortools_branch || 'main' }}
+          echo "OR_REPO=$OR_REPO" >> $GITHUB_ENV
+          echo "OR_REF=$OR_REF" >> $GITHUB_ENV
 
       - name: Set-up Xpress with pip
         run: |
@@ -150,6 +145,8 @@ jobs:
           cmake --version
           cmake -S . -B build \
             -DCMAKE_BUILD_TYPE=Release \
+            -Dortools_REPO=${{ env.OR_REPO }} \
+            -Dortools_REF=${{ env.OR_REF }} \
             -DBUILD_SHARED_LIBS=${{ matrix.cmake.shared }} \
             -DBUILD_PYTHON=${{ matrix.cmake.python }} \
             -DBUILD_JAVA=${{ matrix.cmake.java }} \
@@ -211,7 +208,7 @@ jobs:
         run: |
           MY_DIR="ortools_python-3.9${{ steps.names.outputs.appendix }}"
           mkdir $MY_DIR
-          cp build/python/dist/*.whl $MY_DIR
+          cp ./build/_deps/ortools-build/python/dist/*.whl $MY_DIR
           ARCHIVE_NAME="${MY_DIR}.zip"
           ARCHIVE_PATH="$PWD/${ARCHIVE_NAME}"
           zip -r ${ARCHIVE_PATH} ${MY_DIR}
@@ -236,7 +233,7 @@ jobs:
         run: |
           MY_DIR="ortools_java${{ steps.names.outputs.appendix }}"
           mkdir ${MY_DIR}
-          cp build/java/ortools-*/target/*.jar $MY_DIR
+          cp ./build/_deps/ortools-build/java/ortools-*/target/*.jar $MY_DIR
           ARCHIVE_NAME="${MY_DIR}.zip"
           ARCHIVE_PATH="$PWD/${ARCHIVE_NAME}"
           df -h

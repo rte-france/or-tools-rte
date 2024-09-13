@@ -11,7 +11,7 @@ RUN sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo &&\
     sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo &&\
     sed -i s/^#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/*.repo &&\
     sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/*.repo &&\
-    yum install -y devtoolset-11 &&\
+    yum install -y devtoolset-11 python3-devel python3-pip python3-numpy &&\
     python3 -m pip install --upgrade pip &&\
     python3 -m pip install dataclasses
 
@@ -55,10 +55,14 @@ FROM base AS devel
 ARG SIRIUS=OFF
 ARG SHARED=ON
 ARG BUILD_EXAMPLES=OFF
+ARG OR_REPO="https://github.com/google/or-tools.git"
+ARG OR_REF="stable"
 WORKDIR /home/project
 COPY . .
 FROM devel AS build
 RUN cmake -S. -Bbuild \
+    -Dortools_REPO=${OR_REPO} \
+    -Dortools_REF=${OR_REF} \
     -DBUILD_DEPS=ON \
     -DBUILD_SHARED_LIBS=${SHARED} \
     -DUSE_SIRIUS=${SIRIUS}\
