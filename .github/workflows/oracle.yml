@@ -67,9 +67,9 @@ jobs:
           dnf clean all
           rm -rf /var/cache/dnf
           wget -q "https://downloads.sourceforge.net/project/swig/swig/swig-4.1.1/swig-4.1.1.tar.gz"
-          tar xvf swig-4.1.1.tar.gz
-          rm swig-4.1.1.tar.gz
-          cd swig-4.1.1
+          tar xvf swig-4.2.1.tar.gz
+          rm swig-4.2.1.tar.gz
+          cd swig-4.2.1
           ./configure --prefix=/usr
           make -j 4
           make install
@@ -79,7 +79,11 @@ jobs:
         if: ${{ matrix.cmake.java == 'ON' }}
         run: |
           dnf -y update
-          dnf -y install java-1.8.0-openjdk  java-1.8.0-openjdk-devel maven
+          dnf -y install java-1.8.0-openjdk  java-1.8.0-openjdk-devel
+          wget https://dlcdn.apache.org/maven/maven-3/3.8.5/binaries/apache-maven-3.8.5-bin.tar.gz
+          mkdir /usr/local/maven
+          tar xzf apache-maven-3.8.5-bin.tar.gz -C /usr/local/maven/ --strip-components=1
+          echo "/usr/local/maven/bin/" >> $GITHUB_PATH
           dnf clean all
           rm -rf /var/cache/dnf
       - name: Install python
