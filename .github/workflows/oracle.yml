@@ -66,7 +66,7 @@ jobs:
           dnf -y install pcre-devel
           dnf clean all
           rm -rf /var/cache/dnf
-          wget -q "https://downloads.sourceforge.net/project/swig/swig/swig-4.1.1/swig-4.2.1.tar.gz"
+          wget -q "https://downloads.sourceforge.net/project/swig/swig/swig-4.2.1/swig-4.2.1.tar.gz"
           tar xvf swig-4.2.1.tar.gz
           rm swig-4.2.1.tar.gz
           cd swig-4.2.1
