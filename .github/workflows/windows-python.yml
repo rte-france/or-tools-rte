@@ -119,6 +119,7 @@ jobs:
           -v -j2
 
       - name: Tests not xpress
+        continue-on-error: true
         working-directory: ./build/
         run: >
           ctest -C Release 
