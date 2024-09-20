@@ -119,7 +119,7 @@ jobs:
           -v -j2
 
       - name: Tests not xpress
-        continue-on-error: true
+        continue-on-error: true # reactivate when fixed on google/or-tools
         working-directory: ./build/
         run: >
           ctest -C Release 
