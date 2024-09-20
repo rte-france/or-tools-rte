@@ -30,6 +30,7 @@ jobs:
     container: 'oraclelinux:8'
     env:
       SIRIUS_RELEASE_TAG: antares-integration-v1.4
+      SWIG_BASE_NAME: swig-4.2.1
     strategy:
       fail-fast: false
       matrix:
@@ -66,11 +67,10 @@ jobs:
           dnf -y install pcre-devel
           dnf clean all
           rm -rf /var/cache/dnf
-          SWIG_BASE_NAME="swig-4.2.1"
-          wget -q "https://downloads.sourceforge.net/project/swig/swig/${SWIG_BASE_NAME}/${SWIG_BASE_NAME}.tar.gz"
-          tar xvf ${SWIG_BASE_NAME}.tar.gz
-          rm ${SWIG_BASE_NAME}.tar.gz
-          cd ${SWIG_BASE_NAME}
+          wget -q "https://downloads.sourceforge.net/project/swig/swig/${{ env.SWIG_BASE_NAME }}/${{ env.SWIG_BASE_NAME }}.tar.gz"
+          tar xvf ${{ env.SWIG_BASE_NAME }}.tar.gz
+          rm ${{ env.SWIG_BASE_NAME }}.tar.gz
+          cd ${{ env.SWIG_BASE_NAME }}
           ./configure --prefix=/usr
           make -j 4
           make install
