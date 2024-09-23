@@ -213,10 +213,7 @@ replacements.append(Replacement(
 
 replacements.append(Replacement(
     Path.cwd()/'ortools'/'linear_solver'/'xpress_interface.cc',
-    '''  }
-}
-
-const char* stringToCharPtr(std::string& var) { return var.c_str(); }
+    '''const char* stringToCharPtr(std::string& var) { return var.c_str(); }
 
 // Save the existing locale, use the "C" locale to ensure that
 // string -> double conversion is done ignoring the locale.
@@ -227,44 +224,45 @@ struct ScopedLocale {
     CHECK_EQ(std::string(newLocale), "C");
   }
   ~ScopedLocale() { std::setlocale(LC_NUMERIC, oldLocale); }
-
- private:
-  const char* oldLocale;
-};
-
-#define setParamIfPossible_MACRO(target_map, setter, converter)          \
-  {                                                                      \
-    auto matchingParamIter = (target_map).find(paramAndValuePair.first); \
-    if (matchingParamIter != (target_map).end()) {                       \
-      const auto convertedValue = converter(paramAndValuePair.second);   \
-      VLOG(1) << "Setting parameter " << paramAndValuePair.first         \
-              << " to value " << convertedValue << std::endl;            \
-      setter(mLp, matchingParamIter->second, convertedValue);            \
-      continue;                                                          \
-    }                                                                    \
-  }
 ''',
-    '''  }
-}
-
-bool stringToCharPtr(const std::string& var, const char** out) {
+    '''bool stringToCharPtr(const std::string& var, const char** out) {
   *out = var.c_str();
   return true;
 }
+'''
+))
 
-#define setParamIfPossible_MACRO(target_map, setter, converter, type)    \
-  {                                                                      \
-    auto matchingParamIter = (target_map).find(paramAndValuePair.first); \
-    if (matchingParamIter != (target_map).end()) {                       \
-      type convertedValue;                                               \
-      bool ret = converter(paramAndValuePair.second, &convertedValue);   \
-      if (ret) {                                                         \
-        VLOG(1) << "Setting parameter " << paramAndValuePair.first       \
-                << " to value " << convertedValue << std::endl;          \
-      }                                                                  \
-      setter(mLp, matchingParamIter->second, convertedValue);            \
-      continue;                                                          \
-    }                                                                    \
+replacements.append(Replacement(
+    Path.cwd()/'ortools'/'linear_solver'/'xpress_interface.cc',
+    ''' private:
+  const char* oldLocale;
+};
+
+#define setParamIfPossible_MACRO(target_map, setter, converter)          \\
+  {                                                                      \\
+    auto matchingParamIter = (target_map).find(paramAndValuePair.first); \\
+    if (matchingParamIter != (target_map).end()) {                       \\
+      const auto convertedValue = converter(paramAndValuePair.second);   \\
+      VLOG(1) << "Setting parameter " << paramAndValuePair.first         \\
+              << " to value " << convertedValue << std::endl;            \\
+      setter(mLp, matchingParamIter->second, convertedValue);            \\
+      continue;                                                          \\
+    }                                                                    \\
+  }
+''',
+    '''#define setParamIfPossible_MACRO(target_map, setter, converter, type)    \\
+  {                                                                      \\
+    auto matchingParamIter = (target_map).find(paramAndValuePair.first); \\
+    if (matchingParamIter != (target_map).end()) {                       \\
+      type convertedValue;                                               \\
+      bool ret = converter(paramAndValuePair.second, &convertedValue);   \\
+      if (ret) {                                                         \\
+        VLOG(1) << "Setting parameter " << paramAndValuePair.first       \\
+                << " to value " << convertedValue << std::endl;          \\
+      }                                                                  \\
+      setter(mLp, matchingParamIter->second, convertedValue);            \\
+      continue;                                                          \\
+    }                                                                    \\
   }
 '''
 ))
