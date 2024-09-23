@@ -37,29 +37,11 @@ jobs:
         os: [windows-latest]
         sirius-release-tag: [ antares-integration-v1.4 ]
     steps:
-      - name: set or-tools repo vars if release
-        if: ${{ env.RELEASE_CREATED == 'true' }}
-        shell: bash
-        run: |
-          OR_REPO="https://github.com/google/or-tools.git"
-          TAGNAME="${{ github.event.release.tag_name }}"
-          TAGNAME_WITHOUT_SUFFIX=${TAGNAME%%-*}
-          echo "OR_REPO=$OR_REPO" >> $GITHUB_ENV
-          echo "OR_REF=$TAGNAME_WITHOUT_SUFFIX" >> $GITHUB_ENV
-
-      - name: Checkout or-tools if release
-        if: ${{ env.RELEASE_CREATED == 'true' }}
+      - name: Checkout or-tools
         uses: actions/checkout@v4
         with:
           repository: google/or-tools
-          ref: ${{ env.OR_REF }}
-
-      - name: Checkout or-tools not release
-        if: ${{ env.RELEASE_CREATED == 'false' }}
-        uses: actions/checkout@v4
-        with:
-          repository: rte-france/or-tools
-          ref: ${{ github.event.inputs.rtefrance_ortools_branch || 'main' }}
+          ref: "9.11"
 
       - name: Checkout this repository
         uses: actions/checkout@v4

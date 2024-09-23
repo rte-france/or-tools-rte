@@ -53,8 +53,8 @@ jobs:
         if: ${{ env.RELEASE_CREATED == 'false' }}
         shell: bash
         run: |
-          OR_REPO="https://github.com/rte-france/or-tools.git"
-          OR_REF=${{ github.event.inputs.rtefrance_ortools_branch || 'main' }}
+          OR_REPO="https://github.com/google/or-tools.git"
+          OR_REF="9.11"
           echo "OR_REPO=$OR_REPO" >> $GITHUB_ENV
           echo "OR_REF=$OR_REF" >> $GITHUB_ENV
 
