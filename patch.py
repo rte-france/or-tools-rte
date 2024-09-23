@@ -182,13 +182,34 @@ additions.append(Addition(
     '  friend class SiriusInterface;\n'))
 
 # add temporary patch for XPressInterface
-additions.append(Addition(
+replacements.append(Replacement(
     Path.cwd()/'ortools'/'linear_solver'/'xpress_interface.cc',
     '''#include "absl/strings/str_format.h"
 #include "ortools/base/logging.h"''',
     '''#include "absl/strings/numbers.h"
 #include "absl/strings/str_format.h"
 #include "ortools/base/logging.h"'''))
+
+replacements.append(Replacement(
+    Path.cwd()/'ortools'/'linear_solver'/'xpress_interface.cc',
+    '''        num_nodes_(num_nodes),
+        variable_values_(0) {};
+''',
+    '''        num_nodes_(num_nodes),
+        variable_values_(0){};
+'''))
+
+replacements.append(Replacement(
+    Path.cwd()/'ortools'/'linear_solver'/'xpress_interface.cc',
+    ''' public:
+  explicit MPCallbackWrapper(MPCallback* callback) : callback_(callback) {};
+  MPCallback* GetCallback() const { return callback_; }
+''',
+    ''' public:
+  explicit MPCallbackWrapper(MPCallback* callback) : callback_(callback){};
+  MPCallback* GetCallback() const { return callback_; }
+'''))
+
 
 replacements.append(Replacement(
     Path.cwd()/'ortools'/'linear_solver'/'xpress_interface.cc',
@@ -206,8 +227,7 @@ struct ScopedLocale {
     CHECK_EQ(std::string(newLocale), "C");
   }
   ~ScopedLocale() { std::setlocale(LC_NUMERIC, oldLocale); }
-+bool stringToCharPtr(const std::string& var, const char** out) {
- 
+
  private:
   const char* oldLocale;
 };
@@ -221,7 +241,9 @@ struct ScopedLocale {
               << " to value " << convertedValue << std::endl;            \
       setter(mLp, matchingParamIter->second, convertedValue);            \
       continue;                                                          \
-    }''',
+    }                                                                    \
+  }
+''',
     '''  }
 }
 
@@ -242,7 +264,9 @@ bool stringToCharPtr(const std::string& var, const char** out) {
       }                                                                  \
       setter(mLp, matchingParamIter->second, convertedValue);            \
       continue;                                                          \
-    }'''
+    }                                                                    \
+  }
+'''
 ))
 
 replacements.append(Replacement(
