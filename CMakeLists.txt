@@ -23,7 +23,6 @@ FetchContent_Declare(ortools
             ${CMAKE_CURRENT_SOURCE_DIR}/ortools
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake_patches
             . && ${Python3_EXECUTABLE} patch.py
-        && git apply ${CMAKE_CURRENT_SOURCE_DIR}/fix_locale_bug.patch
         OVERRIDE_FIND_PACKAGE ON
 )
 message("BUILD_DEPS: " ${BUILD_DEPS})

@@ -2,10 +2,11 @@ from pathlib import Path
 from typing import List
 from patch_utils import *
 
-full_patch: List[Addition] = []
+additions: List[Addition] = []
+replacements: List[Replacement] = []
 
 # add the USE_SIRIUS configuration flag in CMakeLists.txt
-full_patch.append(Addition(
+additions.append(Addition(
     Path.cwd()/'CMakeLists.txt',
     '''option(USE_CPLEX "Use the CPLEX solver" OFF)
 message(STATUS "CPLEX support: ${USE_CPLEX}")
@@ -18,12 +19,12 @@ message(STATUS "SIRIUS support: ${USE_SIRIUS}")
 
 # add the USE_SIRIUS configuration flag in cpp.cmake
 
-full_patch.append(
+additions.append(
     Addition(
     Path.cwd()/'cmake'/'cpp.cmake',
     '  $<$<BOOL:${USE_SCIP}>:libscip>\n',
     '  $<$<BOOL:${USE_SIRIUS}>:sirius_solver>\n'))
-full_patch.append(Addition(
+additions.append(Addition(
     Path.cwd()/'cmake'/'cpp.cmake',
     '''
 if(USE_CPLEX)
@@ -37,7 +38,7 @@ endif()
 '''))
 
 # add the USE_SIRIUS configuration flag in deps.cmake
-full_patch.append(Addition(
+additions.append(Addition(
     Path.cwd()/'cmake'/'system_deps.cmake',
     '''
 if(USE_CPLEX)
@@ -56,7 +57,7 @@ endif(USE_SIRIUS)
 '''))
 
 # add the USE_SIRIUS configuration flag in ortoolsConfig.cmake.in
-full_patch.append(Addition(
+additions.append(Addition(
     Path.cwd()/'cmake'/'ortoolsConfig.cmake.in',
     '''
 if(@USE_SCIP@)
@@ -77,19 +78,19 @@ endif()
 '''))
 
 # add SIRIUS execution in example files
-full_patch.append(Addition(
+additions.append(Addition(
     Path.cwd()/'examples'/'cpp'/'linear_programming.cc',
     '  RunLinearProgrammingExample("XPRESS_LP");\n',
     '  RunLinearProgrammingExample("SIRIUS_LP");\n'
     ))
 
-full_patch.append(Addition(
+additions.append(Addition(
     Path.cwd()/'examples'/'dotnet'/'cslinearprogramming.cs',
     '        RunLinearProgrammingExample("XPRESS_LP");\n',
     '        RunLinearProgrammingExample("SIRIUS_LP");\n'
     ))
 
-full_patch.append(Addition(
+additions.append(Addition(
     Path.cwd()/'examples'/'java'/'LinearProgramming.java',
     '''    runLinearProgrammingExample("CLP", false);
 ''',
@@ -97,18 +98,18 @@ full_patch.append(Addition(
     runLinearProgrammingExample("SIRIUS_LP", false);
 '''))
 
-full_patch.append(Addition(
+additions.append(Addition(
     Path.cwd()/'examples'/'python'/'linear_programming.py',
     '    RunLinearExampleCppStyleAPI("XPRESS_LP")\n',
     '    RunLinearExampleCppStyleAPI("SIRIUS_LP")\n'))
 
 # add the USE_SIRIUS configuration flag in ortools/linear_solver/CMakeLists.txt
-full_patch.append(Addition(
+additions.append(Addition(
     Path.cwd()/'ortools'/'linear_solver'/'CMakeLists.txt',
     '  $<$<BOOL:${USE_SCIP}>:libscip>\n',
     '  $<$<BOOL:${USE_SIRIUS}>:sirius_solver>\n'))
 
-full_patch.append(Addition(
+additions.append(Addition(
     Path.cwd()/'ortools'/'linear_solver'/'CMakeLists.txt',
     '''  add_test(NAME cxx_unittests_xpress_interface COMMAND test_xprs_interface)
 ''',
@@ -122,7 +123,7 @@ full_patch.append(Addition(
 '''))
 
 # add the SIRIUS support in ortools/linear_solver/linear_solver.cc & .h
-full_patch.append(Addition(
+additions.append(Addition(
     Path.cwd()/'ortools'/'linear_solver'/'linear_solver.cc',
     '''extern MPSolverInterface* BuildXpressInterface(bool mip,
                                                MPSolver* const solver);
@@ -132,7 +133,7 @@ extern MPSolverInterface* BuildSiriusInterface(bool mip, MPSolver* const solver)
 #endif
 '''))
 
-full_patch.append(Addition(
+additions.append(Addition(
     Path.cwd()/'ortools'/'linear_solver'/'linear_solver.cc',
     '''      return BuildXpressInterface(false, solver);
 ''',
@@ -144,7 +145,7 @@ full_patch.append(Addition(
 #endif
 '''))
 
-full_patch.append(Addition(
+additions.append(Addition(
     Path.cwd()/'ortools'/'linear_solver'/'linear_solver.cc',
     '''#ifdef USE_CPLEX
   if (problem_type == CPLEX_LINEAR_PROGRAMMING ||
@@ -159,7 +160,7 @@ full_patch.append(Addition(
 #endif
 '''))
 
-full_patch.append(Addition(
+additions.append(Addition(
     Path.cwd()/'ortools'/'linear_solver'/'linear_solver.cc',
     '''        {MPSolver::XPRESS_MIXED_INTEGER_PROGRAMMING, "xpress"},
 ''',
@@ -167,7 +168,7 @@ full_patch.append(Addition(
         {MPSolver::SIRIUS_MIXED_INTEGER_PROGRAMMING, "sirius"},
 '''))
 
-full_patch.append(Addition(
+additions.append(Addition(
     Path.cwd()/'ortools'/'linear_solver'/'linear_solver.h',
     '''    COPT_MIXED_INTEGER_PROGRAMMING = 104,
 ''',
@@ -175,11 +176,113 @@ full_patch.append(Addition(
     SIRIUS_MIXED_INTEGER_PROGRAMMING = 106,
 '''))
 
-full_patch.append(Addition(
+additions.append(Addition(
     Path.cwd()/'ortools'/'linear_solver'/'linear_solver.h',
     '  friend class XpressInterface;\n',
     '  friend class SiriusInterface;\n'))
 
+# add temporary patch for XPressInterface
+additions.append(Addition(
+    Path.cwd()/'ortools'/'linear_solver'/'xpress_interface.cc',
+    '''#include "absl/strings/str_format.h"
+#include "ortools/base/logging.h"''',
+    '''#include "absl/strings/numbers.h"
+#include "absl/strings/str_format.h"
+#include "ortools/base/logging.h"'''))
+
+replacements.append(Replacement(
+    Path.cwd()/'ortools'/'linear_solver'/'xpress_interface.cc',
+    '''  }
+}
+
+const char* stringToCharPtr(std::string& var) { return var.c_str(); }
+
+// Save the existing locale, use the "C" locale to ensure that
+// string -> double conversion is done ignoring the locale.
+struct ScopedLocale {
+  ScopedLocale() {
+    oldLocale = std::setlocale(LC_NUMERIC, nullptr);
+    auto newLocale = std::setlocale(LC_NUMERIC, "C");
+    CHECK_EQ(std::string(newLocale), "C");
+  }
+  ~ScopedLocale() { std::setlocale(LC_NUMERIC, oldLocale); }
++bool stringToCharPtr(const std::string& var, const char** out) {
+ 
+ private:
+  const char* oldLocale;
+};
+
+#define setParamIfPossible_MACRO(target_map, setter, converter)          \
+  {                                                                      \
+    auto matchingParamIter = (target_map).find(paramAndValuePair.first); \
+    if (matchingParamIter != (target_map).end()) {                       \
+      const auto convertedValue = converter(paramAndValuePair.second);   \
+      VLOG(1) << "Setting parameter " << paramAndValuePair.first         \
+              << " to value " << convertedValue << std::endl;            \
+      setter(mLp, matchingParamIter->second, convertedValue);            \
+      continue;                                                          \
+    }''',
+    '''  }
+}
+
+bool stringToCharPtr(const std::string& var, const char** out) {
+  *out = var.c_str();
+  return true;
+}
+
+#define setParamIfPossible_MACRO(target_map, setter, converter, type)    \
+  {                                                                      \
+    auto matchingParamIter = (target_map).find(paramAndValuePair.first); \
+    if (matchingParamIter != (target_map).end()) {                       \
+      type convertedValue;                                               \
+      bool ret = converter(paramAndValuePair.second, &convertedValue);   \
+      if (ret) {                                                         \
+        VLOG(1) << "Setting parameter " << paramAndValuePair.first       \
+                << " to value " << convertedValue << std::endl;          \
+      }                                                                  \
+      setter(mLp, matchingParamIter->second, convertedValue);            \
+      continue;                                                          \
+    }'''
+))
+
+replacements.append(Replacement(
+    Path.cwd()/'ortools'/'linear_solver'/'xpress_interface.cc',
+    '''    }
+  }
+
+  ScopedLocale locale;
+  for (auto& paramAndValuePair : paramAndValuePairList) {
+    setParamIfPossible_MACRO(mapIntegerControls_, XPRSsetintcontrol, std::stoi);
+    setParamIfPossible_MACRO(mapDoubleControls_, XPRSsetdblcontrol, std::stod);
+    setParamIfPossible_MACRO(mapStringControls_, XPRSsetstrcontrol,
+                             stringToCharPtr);
+    setParamIfPossible_MACRO(mapInteger64Controls_, XPRSsetintcontrol64,
+                             std::stoll);
+    LOG(ERROR) << "Unknown parameter " << paramName << " : function "
+               << __FUNCTION__ << std::endl;
+    return false;
+''',
+    '''    }
+  }
+
+  for (auto& paramAndValuePair : paramAndValuePairList) {
+    setParamIfPossible_MACRO(mapIntegerControls_, XPRSsetintcontrol,
+                             absl::SimpleAtoi<int>, int);
+    setParamIfPossible_MACRO(mapDoubleControls_, XPRSsetdblcontrol,
+                             absl::SimpleAtod, double);
+    setParamIfPossible_MACRO(mapStringControls_, XPRSsetstrcontrol,
+                             stringToCharPtr, const char*);
+    setParamIfPossible_MACRO(mapInteger64Controls_, XPRSsetintcontrol64,
+                             absl::SimpleAtoi<int64_t>, int64_t);
+    LOG(ERROR) << "Unknown parameter " << paramName << " : function "
+               << __FUNCTION__ << std::endl;
+    return false;
+'''
+))
+
+
 # run patch
-for a in full_patch:
+for a in additions:
     replace_in_file(a.filepath, a.search, a.search+a.add)
+for r in replacements:
+    replace_in_file(r.filepath, r.search, r.replace)

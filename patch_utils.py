@@ -19,3 +19,9 @@ class Addition:
     filepath: Path
     search: str
     add: str
+
+@dataclass
+class Replacement:
+    filepath: Path
+    search: str
+    replace: str
