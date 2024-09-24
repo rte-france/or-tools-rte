@@ -30,6 +30,7 @@ jobs:
     container: 'oraclelinux:8'
     env:
       SIRIUS_RELEASE_TAG: antares-integration-v1.4
+      SWIG_BASE_NAME: swig-4.2.1
     strategy:
       fail-fast: false
       matrix:
@@ -66,20 +67,24 @@ jobs:
           dnf -y install pcre-devel
           dnf clean all
           rm -rf /var/cache/dnf
-          wget -q "https://downloads.sourceforge.net/project/swig/swig/swig-4.1.1/swig-4.1.1.tar.gz"
-          tar xvf swig-4.1.1.tar.gz
-          rm swig-4.1.1.tar.gz
-          cd swig-4.1.1
+          wget -q "https://downloads.sourceforge.net/project/swig/swig/${{ env.SWIG_BASE_NAME }}/${{ env.SWIG_BASE_NAME }}.tar.gz"
+          tar xvf ${{ env.SWIG_BASE_NAME }}.tar.gz
+          rm ${{ env.SWIG_BASE_NAME }}.tar.gz
+          cd ${{ env.SWIG_BASE_NAME }}
           ./configure --prefix=/usr
           make -j 4
           make install
           cd ..
-          rm -rf swig-4.1.1
+          rm -rf swig-4.2.1
       - name: Install java (jdk)
         if: ${{ matrix.cmake.java == 'ON' }}
         run: |
           dnf -y update
-          dnf -y install java-1.8.0-openjdk  java-1.8.0-openjdk-devel maven
+          dnf -y install java-1.8.0-openjdk  java-1.8.0-openjdk-devel
+          wget https://dlcdn.apache.org/maven/maven-3/3.8.8/binaries/apache-maven-3.8.8-bin.tar.gz
+          mkdir /usr/local/maven
+          tar xzf apache-maven-3.8.8-bin.tar.gz -C /usr/local/maven/ --strip-components=1
+          echo "/usr/local/maven/bin/" >> $GITHUB_PATH
           dnf clean all
           rm -rf /var/cache/dnf
       - name: Install python
