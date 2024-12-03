@@ -88,11 +88,17 @@ class XpressHeaderParser(object):
         self.__int64_parameters_unittest = ''
         # These are the definitions required for compiling the XPRESS interface, excluding control parameters
         self.__required_defines = {"XPRS_STOP_USER", "XPRS_TYPE_NOTDEFINED", "XPRS_TYPE_INT", "XPRS_TYPE_INT64",
-                                   "XPRS_TYPE_DOUBLE", "XPRS_PLUSINFINITY", "XPRS_MINUSINFINITY", "XPRS_MAXBANNERLENGTH", "XPVERSION",
+                                   "XPRS_TYPE_DOUBLE", "XPRS_PLUSINFINITY", "XPRS_MINUSINFINITY",
+                                   "XPRS_MAXBANNERLENGTH", "XPVERSION",
                                    "XPRS_LPOBJVAL", "XPRS_MIPOBJVAL", "XPRS_BESTBOUND", "XPRS_OBJRHS", "XPRS_OBJSENSE",
-                                   "XPRS_ROWS", "XPRS_SIMPLEXITER", "XPRS_LPSTATUS", "XPRS_MIPSTATUS", "XPRS_NODES",
-                                   "XPRS_COLS", "XPRS_LP_OPTIMAL", "XPRS_LP_INFEAS", "XPRS_LP_UNBOUNDED",
-                                   "XPRS_MIP_SOLUTION", "XPRS_MIP_INFEAS", "XPRS_MIP_OPTIMAL", "XPRS_MIP_UNBOUNDED",
+                                   "XPRS_ROWS", "XPRS_SIMPLEXITER",
+                                   # LPSTATUS
+                                   "XPRS_LPSTATUS", "XPRS_LP_UNSTARTED", "XPRS_LP_OPTIMAL", "XPRS_LP_INFEAS",
+                                   "XPRS_LP_CUTOFF", "XPRS_LP_UNFINISHED", "XPRS_LP_UNBOUNDED",
+                                   "XPRS_LP_CUTOFF_IN_DUAL", "XPRS_LP_UNSOLVED", "XPRS_LP_NONCONVEX",
+                                   # MIP STATUS
+                                   "XPRS_MIPSTATUS", "XPRS_MIP_INFEAS", "XPRS_MIP_OPTIMAL", "XPRS_MIP_UNBOUNDED",
+                                   "XPRS_COLS", "XPRS_NODES", "XPRS_MIP_SOLUTION",
                                    "XPRS_OBJ_MINIMIZE", "XPRS_OBJ_MAXIMIZE", "XPRS_NAMES_ROW", "XPRS_NAMES_COLUMN"}
         self.__missing_required_defines = self.__required_defines
         # These enum will detect control parameters that will all be imported
@@ -107,19 +113,26 @@ class XpressHeaderParser(object):
                                      "XPRSgetdblcontrol", "XPRSgetstringcontrol", "XPRSgetintattrib",
                                      "XPRSgetdblattrib", "XPRSloadlp", "XPRSloadlp64", "XPRSgetobj", "XPRSgetrhs",
                                      "XPRSgetrhsrange", "XPRSgetlb", "XPRSgetub", "XPRSgetcoef", "XPRSaddrows",
-                                     "XPRSdelrows", "XPRSaddcols", "XPRSaddnames", "XPRSgetnames", "XPRSdelcols", "XPRSchgcoltype", "XPRSloadbasis",
+                                     "XPRSdelrows", "XPRSaddcols", "XPRSaddnames", "XPRSgetnames", "XPRSdelcols",
+                                     "XPRSchgcoltype", "XPRSloadbasis",
                                      "XPRSpostsolve", "XPRSchgobjsense", "XPRSgetlasterror", "XPRSgetbasis",
                                      "XPRSwriteprob", "XPRSgetrowtype", "XPRSgetcoltype", "XPRSgetlpsol",
                                      "XPRSgetmipsol", "XPRSchgbounds", "XPRSchgobj", "XPRSchgcoef", "XPRSchgmcoef",
-                                     "XPRSchgrhs", "XPRSchgrhsrange", "XPRSchgrowtype", "XPRSaddcbmessage", "XPRSsetcbmessage",
+                                     "XPRSchgrhs", "XPRSchgrhsrange", "XPRSchgrowtype", "XPRSaddcbmessage",
+                                     "XPRSsetcbmessage",
                                      "XPRSaddmipsol", "XPRSaddcbintsol", "XPRSremovecbintsol",
-                                     "XPRSinterrupt", "XPRSlpoptimize", "XPRSmipoptimize", "XPRSsetindicators"}
+                                     "XPRSinterrupt", "XPRSlpoptimize", "XPRSmipoptimize", "XPRSsetindicators",
+                                     "XPRSgetcontrolinfo"}
         self.__missing_required_functions = self.__required_functions
         self.__XPRSprob_section = False
 
     def write_define(self, symbol, value):
         if symbol in self.__excluded_defines:
             print('skipping ' + symbol)
+            return
+        if "deprecated" in value.lower():
+            print(
+                f"WARNING: Skipped defined symbol '{symbol}' because it is deprecated. If it is required, replace it.")
             return
 
         # If it is a control parameter, import it to expose it to the user
@@ -186,10 +199,10 @@ class XpressHeaderParser(object):
                     self.__doc_section = XprsDocumentSection.OTHER
 
             if self.__state == 0:
-                match_def = re.match(r'#define ([A-Z0-9_]*)\s+([^/]+)', line,
+                match_def = re.match(r'#define ([A-Z0-9_]*)\s+([/*]*)([^/]+)([*/]*)\s+([^/]+)', line,
                                      re.M)
                 if match_def:
-                    self.write_define(match_def.group(1), match_def.group(2))
+                    self.write_define(match_def.group(1), match_def.group(match_def.lastindex))
                     continue
 
                 # Single line function definition.
@@ -279,28 +292,36 @@ class XpressHeaderParser(object):
         print('------------------- assign (to copy in the assign part of environment.cc) -------------------')
         print(self.__assign)
 
-        print('------------------- string params (to copy in the "getMapStringControls" function of linear_solver/xpress_interface.cc) -------------------')
+        print(
+            '------------------- string params (to copy in the "getMapStringControls" function of linear_solver/xpress_interface.cc) -------------------')
         print(self.__string_parameters)
 
-        print('------------------- string params test (to copy in the "setStringControls" TEST of linear_solver/unittests/xpress_interface.cc) -------------------')
+        print(
+            '------------------- string params test (to copy in the "setStringControls" TEST of linear_solver/unittests/xpress_interface.cc) -------------------')
         print(self.__string_parameters_unittest)
 
-        print('------------------- double params (to copy in the "getMapDoubleControls" function of linear_solver/xpress_interface.cc) -------------------')
+        print(
+            '------------------- double params (to copy in the "getMapDoubleControls" function of linear_solver/xpress_interface.cc) -------------------')
         print(self.__double_parameters)
 
-        print('------------------- double params test (to copy in the "setDoubleControls" TEST of linear_solver/unittests/xpress_interface.cc) -------------------')
+        print(
+            '------------------- double params test (to copy in the "setDoubleControls" TEST of linear_solver/unittests/xpress_interface.cc) -------------------')
         print(self.__double_parameters_unittest)
 
-        print('------------------- int params (to copy in the "getMapIntControls" function of linear_solver/xpress_interface.cc) -------------------')
+        print(
+            '------------------- int params (to copy in the "getMapIntControls" function of linear_solver/xpress_interface.cc) -------------------')
         print(self.__int_parameters)
 
-        print('------------------- int params test (to copy in the "setIntControls" TEST of linear_solver/unittests/xpress_interface.cc) -------------------')
+        print(
+            '------------------- int params test (to copy in the "setIntControls" TEST of linear_solver/unittests/xpress_interface.cc) -------------------')
         print(self.__int_parameters_unittest)
 
-        print('------------------- int64 params (to copy in the "getMapInt64Controls" function of linear_solver/xpress_interface.cc) -------------------')
+        print(
+            '------------------- int64 params (to copy in the "getMapInt64Controls" function of linear_solver/xpress_interface.cc) -------------------')
         print(self.__int64_parameters)
 
-        print('------------------- int64 params test (to copy in the "setInt64Controls" TEST of linear_solver/unittests/xpress_interface.cc) -------------------')
+        print(
+            '------------------- int64 params test (to copy in the "setInt64Controls" TEST of linear_solver/unittests/xpress_interface.cc) -------------------')
         print(self.__int64_parameters_unittest)
 
     def print_missing_elements(self):
