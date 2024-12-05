@@ -91,7 +91,7 @@ class XpressHeaderParser(object):
                                    "XPRS_TYPE_DOUBLE", "XPRS_PLUSINFINITY", "XPRS_MINUSINFINITY",
                                    "XPRS_MAXBANNERLENGTH", "XPVERSION",
                                    "XPRS_LPOBJVAL", "XPRS_MIPOBJVAL", "XPRS_BESTBOUND", "XPRS_OBJRHS", "XPRS_OBJSENSE",
-                                   "XPRS_ROWS", "XPRS_SIMPLEXITER",
+                                   "XPRS_ROWS", "XPRS_SIMPLEXITER", "XPRS_BARITER",
                                    # LPSTATUS
                                    "XPRS_LPSTATUS", "XPRS_LP_UNSTARTED", "XPRS_LP_OPTIMAL", "XPRS_LP_INFEAS",
                                    "XPRS_LP_CUTOFF", "XPRS_LP_UNFINISHED", "XPRS_LP_UNBOUNDED",
