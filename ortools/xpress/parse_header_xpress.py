@@ -99,7 +99,9 @@ class XpressHeaderParser(object):
                                    # MIP STATUS
                                    "XPRS_MIPSTATUS", "XPRS_MIP_INFEAS", "XPRS_MIP_OPTIMAL", "XPRS_MIP_UNBOUNDED",
                                    "XPRS_COLS", "XPRS_NODES", "XPRS_MIP_SOLUTION",
-                                   "XPRS_OBJ_MINIMIZE", "XPRS_OBJ_MAXIMIZE", "XPRS_NAMES_ROW", "XPRS_NAMES_COLUMN"}
+                                   "XPRS_OBJ_MINIMIZE", "XPRS_OBJ_MAXIMIZE", "XPRS_NAMES_ROW", "XPRS_NAMES_COLUMN",
+                                   "XPRS_ALG_DUAL", "XPRS_ALG_PRIMAL", "XPRS_ALG_BARRIER",
+                                   "XPRS_SOLSTATUS_NOTFOUND", "XPRS_SOLSTATUS_OPTIMAL", "XPRS_SOLSTATUS_FEASIBLE", "XPRS_SOLSTATUS_INFEASIBLE", "XPRS_SOLSTATUS_UNBOUNDED"}
         self.__missing_required_defines = self.__required_defines
         # These enum will detect control parameters that will all be imported
         self.__doc_section = XprsDocumentSection.OTHER
