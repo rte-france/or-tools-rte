@@ -91,7 +91,7 @@ class XpressHeaderParser(object):
                                    "XPRS_TYPE_DOUBLE", "XPRS_PLUSINFINITY", "XPRS_MINUSINFINITY",
                                    "XPRS_MAXBANNERLENGTH", "XPVERSION",
                                    "XPRS_LPOBJVAL", "XPRS_MIPOBJVAL", "XPRS_BESTBOUND", "XPRS_OBJRHS", "XPRS_OBJSENSE",
-                                   "XPRS_ROWS", "XPRS_SIMPLEXITER", "XPRS_BARITER",
+                                   "XPRS_ROWS", "XPRS_SIMPLEXITER", "XPRS_BARITER", "XPRS_MAXPROBNAMELENGTH",
                                    # LPSTATUS
                                    "XPRS_LPSTATUS", "XPRS_LP_UNSTARTED", "XPRS_LP_OPTIMAL", "XPRS_LP_INFEAS",
                                    "XPRS_LP_CUTOFF", "XPRS_LP_UNFINISHED", "XPRS_LP_UNBOUNDED",
@@ -121,10 +121,10 @@ class XpressHeaderParser(object):
                                      "XPRSwriteprob", "XPRSgetrowtype", "XPRSgetcoltype", "XPRSgetlpsol",
                                      "XPRSgetmipsol", "XPRSchgbounds", "XPRSchgobj", "XPRSchgcoef", "XPRSchgmcoef", "XPRSchgmcoef64",
                                      "XPRSchgrhs", "XPRSchgrhsrange", "XPRSchgrowtype", "XPRSaddcbmessage",
-                                     "XPRSsetcbmessage",
+                                     "XPRSsetcbmessage", "XPRSsetprobname",
                                      "XPRSaddmipsol", "XPRSaddcbintsol", "XPRSremovecbintsol",
                                      "XPRSinterrupt", "XPRSlpoptimize", "XPRSmipoptimize", "XPRSoptimize", "XPRSsetindicators",
-                                     "XPRSgetcontrolinfo", "XPRSgetsolution", "XPRSgetduals", "XPRSgetredcosts", "XPRSchgmqobj"}
+                                     "XPRSgetcontrolinfo", "XPRSgetduals", "XPRSgetredcosts", "XPRSchgmqobj"}
         self.__missing_required_functions = self.__required_functions
         self.__XPRSprob_section = False
 
