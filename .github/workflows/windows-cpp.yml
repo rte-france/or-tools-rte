@@ -112,6 +112,7 @@ jobs:
           -DCMAKE_INSTALL_PREFIX=install
           -DUSE_SIRIUS=${{ matrix.sirius }}
           -DUSE_HIGHS=OFF
+          -DUSE_PDLP=ON
 
       - name: Build
         run: >

@@ -110,6 +110,7 @@ jobs:
           -DBUILD_PYTHON=ON
           -DBUILD_SAMPLES=OFF
           -DUSE_HIGHS=OFF
+          -DUSE_PDLP=ON
 
       - name: Build
         run: >
