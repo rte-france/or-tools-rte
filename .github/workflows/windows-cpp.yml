@@ -23,12 +23,6 @@ env:
   RELEASE_CREATED: ${{ github.event_name == 'release' && github.event.action == 'created' }}
 
 jobs:
-  strategy:
-    matrix:
-      cmake: [
-        {generator: "Visual Studio 17 2022", config: Release, build_target: ALL_BUILD, test_target: RUN_TESTS, install_target: INSTALL},
-        {generator: "Visual Studio 17 2022", config: Debug, build_target: ALL_BUILD, test_target: RUN_TESTS, install_target: INSTALL},
-      ]
   build:
     name: Windows cpp sirius=${{ matrix.sirius }} sirius-release-tag=${{ matrix.sirius-release-tag }}
     runs-on: ${{ matrix.os }}
@@ -42,6 +36,10 @@ jobs:
         sirius: [ON, OFF]
         os: [windows-latest]
         sirius-release-tag: [ antares-integration-v1.4 ]
+        cmake: [
+          {generator: "Visual Studio 17 2022", config: Release, build_target: ALL_BUILD, test_target: RUN_TESTS, install_target: INSTALL},
+          {generator: "Visual Studio 17 2022", config: Debug, build_target: ALL_BUILD, test_target: RUN_TESTS, install_target: INSTALL},
+        ]
     steps:
       - name: set or-tools repo vars if release
         if: ${{ env.RELEASE_CREATED == 'true' }}
