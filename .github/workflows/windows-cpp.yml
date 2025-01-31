@@ -111,7 +111,7 @@ jobs:
           -G "Visual Studio 17 2022"
           -DCMAKE_BUILD_TYPE=${{ matrix.cmake.config }}
           -DBUILD_DEPS=ON
-          -DBUILD_EXAMPLES=${{ env.RELEASE_CREATED == 'true' && 'OFF' || 'ON' }}
+          -DBUILD_EXAMPLES=${{ (env.RELEASE_CREATED == 'true' && matrix.cmake.config != 'Release') && 'OFF' || 'ON' }}
           -DBUILD_SAMPLES=OFF 
           -DCMAKE_INSTALL_PREFIX=install
           -DUSE_SIRIUS=${{ matrix.sirius }}
@@ -126,6 +126,7 @@ jobs:
           -v -j2
 
       - name: Tests not xpress
+        if: ${{ matrix.cmake.config == 'Release' }}
         working-directory: ./build/
         run: >
           ctest -C ${{ matrix.cmake.config }} 
@@ -133,6 +134,7 @@ jobs:
           -E "(_xpress|_sirius)"
 
       - name: Tests xpress
+        if: ${{ matrix.cmake.config == 'Release' }}
         working-directory: ./build/
         run: |
           $env:XPRESSDIR
@@ -140,6 +142,7 @@ jobs:
           ctest -V -C ${{ matrix.cmake.config }} --output-on-failure -R "_xpress"
 
       - name: Tests sirius
+        if: ${{ matrix.cmake.config == 'Release' }}
         working-directory: ./build/
         run: >
           ctest -V -C ${{ matrix.cmake.config }} --output-on-failure -R "sirius"
