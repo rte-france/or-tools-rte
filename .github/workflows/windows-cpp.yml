@@ -24,7 +24,7 @@ env:
 
 jobs:
   build:
-    name: Windows cpp sirius=${{ matrix.sirius }} sirius-release-tag=${{ matrix.sirius-release-tag }}
+    name: Windows cpp sirius=${{ matrix.sirius }} sirius-release-tag=${{ matrix.sirius-release-tag }} type=${{ matrix.cmake.config }}
     runs-on: ${{ matrix.os }}
     env:
       SIRIUS_RELEASE_TAG: ${{ matrix.sirius-release-tag }}
