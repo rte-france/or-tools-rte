@@ -162,9 +162,10 @@ jobs:
           SIRIUS=${{ matrix.sirius }}
           [ $SIRIUS == "ON" ] && WITH_SIRIUS="_sirius$SIRIUS_BRANCH" || WITH_SIRIUS=""
           OS="_${{ matrix.os }}"
-          APPENDIX="${OS}${WITH_SIRIUS}"
+          TYPE="_${{ matrix.cmake.config }}"
+          APPENDIX="${OS}${WITH_SIRIUS}${TYPE}"
           echo "appendix=$APPENDIX" >> $GITHUB_OUTPUT
-          APPENDIX_WITH_SHARED="${OS}${WITH_SHARED}${WITH_SIRIUS}"
+          APPENDIX_WITH_SHARED="${OS}${WITH_SHARED}${WITH_SIRIUS}${TYPE}"
           echo "appendix_with_shared=$APPENDIX_WITH_SHARED" >> $GITHUB_OUTPUT
 
       - name: install zip
