@@ -9,7 +9,7 @@ cp -r ../ortools .
 python3 patch.py
 # the content of the directory $SANDBOX_DIR_NAME is the patched ortools
 SIRIUS_ZIPFILE=ubuntu-20.04_sirius-solver.zip
-SIRIUS_RELEASE_TAG="antares-integration-v1.4"
+SIRIUS_RELEASE_TAG="antares-integration-v1.7"
 wget https://github.com/rte-france/sirius-solver/releases/download/$SIRIUS_RELEASE_TAG/$SIRIUS_ZIPFILE
 unzip $SIRIUS_ZIPFILE
 mv ubuntu-20.04_sirius-solver-install sirius_install

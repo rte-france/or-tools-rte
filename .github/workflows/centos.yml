@@ -28,7 +28,7 @@ jobs:
     name: shrd=${{ matrix.shared }} sirius=${{ matrix.sirius }}
     runs-on: ubuntu-latest
     env:
-      SIRIUS_RELEASE_TAG: antares-integration-v1.4
+      SIRIUS_RELEASE_TAG: antares-integration-v1.7
     strategy:
       fail-fast: false
       matrix:

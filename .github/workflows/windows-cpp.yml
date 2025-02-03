@@ -24,7 +24,7 @@ env:
 
 jobs:
   build:
-    name: Windows cpp sirius=${{ matrix.sirius }} sirius-release-tag=${{ matrix.sirius-release-tag }}
+    name: Windows cpp sirius=${{ matrix.sirius }} sirius-release-tag=${{ matrix.sirius-release-tag }} type=${{ matrix.cmake.config }}
     runs-on: ${{ matrix.os }}
     env:
       SIRIUS_RELEASE_TAG: ${{ matrix.sirius-release-tag }}
@@ -35,7 +35,11 @@ jobs:
       matrix:
         sirius: [ON, OFF]
         os: [windows-latest]
-        sirius-release-tag: [ antares-integration-v1.4 ]
+        sirius-release-tag: [ antares-integration-v1.7 ]
+        cmake: [
+          {generator: "Visual Studio 17 2022", config: Release, build_target: ALL_BUILD, test_target: RUN_TESTS, install_target: INSTALL},
+          {generator: "Visual Studio 17 2022", config: Debug, build_target: ALL_BUILD, test_target: RUN_TESTS, install_target: INSTALL},
+        ]
     steps:
       - name: set or-tools repo vars if release
         if: ${{ env.RELEASE_CREATED == 'true' }}
@@ -105,9 +109,9 @@ jobs:
         run: >
           cmake -S. -Bbuild
           -G "Visual Studio 17 2022"
-          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_CONFIGURATION_TYPES=${{ matrix.cmake.config }}
           -DBUILD_DEPS=ON
-          -DBUILD_EXAMPLES=${{ env.RELEASE_CREATED == 'true' && 'OFF' || 'ON' }}
+          -DBUILD_EXAMPLES=${{ env.RELEASE_CREATED == 'true' && 'OFF' || (matrix.cmake.config != 'Release' && 'OFF' || 'ON') }}
           -DBUILD_SAMPLES=OFF 
           -DCMAKE_INSTALL_PREFIX=install
           -DUSE_SIRIUS=${{ matrix.sirius }}
@@ -117,33 +121,36 @@ jobs:
       - name: Build
         run: >
           cmake --build build 
-          --config Release 
+          --config ${{ matrix.cmake.config }} 
           --target ALL_BUILD
           -v -j2
 
       - name: Tests not xpress
+        if: ${{ matrix.cmake.config == 'Release' }}
         working-directory: ./build/
         run: >
-          ctest -C Release 
+          ctest -C ${{ matrix.cmake.config }} 
           --output-on-failure 
           -E "(_xpress|_sirius)"
 
       - name: Tests xpress
+        if: ${{ matrix.cmake.config == 'Release' }}
         working-directory: ./build/
         run: |
           $env:XPRESSDIR
           Get-ChildItem -Path $env:XPRESSDIR
-          ctest -V -C Release --output-on-failure -R "_xpress"
+          ctest -V -C ${{ matrix.cmake.config }} --output-on-failure -R "_xpress"
 
       - name: Tests sirius
+        if: ${{ matrix.cmake.config == 'Release' }}
         working-directory: ./build/
         run: >
-          ctest -V -C Release --output-on-failure -R "sirius"
+          ctest -V -C ${{ matrix.cmake.config }} --output-on-failure -R "sirius"
 
       - name: Install
         run: >
           cmake --build build
-          --config Release
+          --config ${{ matrix.cmake.config }}
           --target INSTALL
           -v
 
@@ -158,9 +165,10 @@ jobs:
           SIRIUS=${{ matrix.sirius }}
           [ $SIRIUS == "ON" ] && WITH_SIRIUS="_sirius$SIRIUS_BRANCH" || WITH_SIRIUS=""
           OS="_${{ matrix.os }}"
-          APPENDIX="${OS}${WITH_SIRIUS}"
+          TYPE="_${{ matrix.cmake.config }}"
+          APPENDIX="${OS}${WITH_SIRIUS}${TYPE}"
           echo "appendix=$APPENDIX" >> $GITHUB_OUTPUT
-          APPENDIX_WITH_SHARED="${OS}${WITH_SHARED}${WITH_SIRIUS}"
+          APPENDIX_WITH_SHARED="${OS}${WITH_SHARED}${WITH_SIRIUS}${TYPE}"
           echo "appendix_with_shared=$APPENDIX_WITH_SHARED" >> $GITHUB_OUTPUT
 
       - name: install zip
