@@ -35,7 +35,7 @@ RUN cd /applis &&\
     zipfile=centos-7_sirius-solver.zip &&\
     wget https://github.com/rte-france/sirius-solver/releases/download/${SIRIUS_RELEASE_TAG}/$zipfile &&\
     unzip $zipfile && rm $zipfile &&\
-    mv centos-7_sirius-solver-install sirius_install &&\
+    mv install sirius_install &&\
     echo "export LD_LIBRARY_PATH=$PWD/sirius_install/lib::$LD_LIBRARY_PATH" >> /etc/bashrc &&\
     echo "SIRIUS_CMAKE_DIR=$PWD/sirius_install/cmake" >> /etc/bashrc
 
