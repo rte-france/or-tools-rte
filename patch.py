@@ -20,9 +20,9 @@ message(STATUS "SIRIUS support: ${USE_SIRIUS}")
 
 full_patch.append(
     Addition(
-    Path.cwd()/'cmake'/'cpp.cmake',
-    '  $<$<BOOL:${USE_SCIP}>:libscip>\n',
-    '  $<$<BOOL:${USE_SIRIUS}>:sirius_solver>\n'))
+        Path.cwd()/'cmake'/'cpp.cmake',
+        '  $<$<BOOL:${USE_SCIP}>:libscip>\n',
+        '  $<$<BOOL:${USE_SIRIUS}>:sirius_solver>\n'))
 full_patch.append(Addition(
     Path.cwd()/'cmake'/'cpp.cmake',
     '''
@@ -81,13 +81,13 @@ full_patch.append(Addition(
     Path.cwd()/'examples'/'cpp'/'linear_programming.cc',
     '  RunLinearProgrammingExample("XPRESS_LP");\n',
     '  RunLinearProgrammingExample("SIRIUS_LP");\n'
-    ))
+))
 
 full_patch.append(Addition(
     Path.cwd()/'examples'/'dotnet'/'cslinearprogramming.cs',
     '        RunLinearProgrammingExample("XPRESS_LP");\n',
     '        RunLinearProgrammingExample("SIRIUS_LP");\n'
-    ))
+))
 
 full_patch.append(Addition(
     Path.cwd()/'examples'/'java'/'LinearProgramming.java',
@@ -112,13 +112,14 @@ full_patch.append(Addition(
     Path.cwd()/'ortools'/'linear_solver'/'CMakeLists.txt',
     '''  add_test(NAME cxx_unittests_xpress_interface COMMAND test_xprs_interface)
 ''',
-    '''  if (USE_SIRIUS)
+    '''  endif()
+
+  if (USE_SIRIUS)
     add_executable(test_sirius_interface sirius_interface_test.cc)
     target_compile_features(test_sirius_interface PRIVATE cxx_std_17)
     target_link_libraries(test_sirius_interface PRIVATE ortools::ortools GTest::gtest_main)
 
     add_test(NAME cxx_unittests_sirius_interface COMMAND test_sirius_interface)
-  endif()
 '''))
 
 # add the SIRIUS support in ortools/linear_solver/linear_solver.cc & .h
