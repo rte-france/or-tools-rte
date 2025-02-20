@@ -136,14 +136,6 @@ jobs:
           --target ALL_BUILD
           -v -j2
 
-      - name: Tests not xpress
-        if: ${{ matrix.cmake.config == 'Release' }}
-        working-directory: ./build/
-        run: >
-          ctest -C ${{ matrix.cmake.config }} 
-          --output-on-failure 
-          -E "(_xpress|_sirius)"
-
       - name: Tests xpress
         if: ${{ matrix.cmake.config == 'Release' }}
         working-directory: ./build/
