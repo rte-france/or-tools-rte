@@ -20,9 +20,9 @@ message(STATUS "SIRIUS support: ${USE_SIRIUS}")
 
 full_patch.append(
     Addition(
-        Path.cwd()/'cmake'/'cpp.cmake',
-        '  $<$<BOOL:${USE_SCIP}>:libscip>\n',
-        '  $<$<BOOL:${USE_SIRIUS}>:sirius_solver>\n'))
+    Path.cwd()/'cmake'/'cpp.cmake',
+    '  ${SCIP_DEPS}\n',
+    '  $<$<BOOL:${USE_SIRIUS}>:sirius_solver>\n'))
 full_patch.append(Addition(
     Path.cwd()/'cmake'/'cpp.cmake',
     '''
@@ -60,7 +60,7 @@ full_patch.append(Addition(
     Path.cwd()/'cmake'/'ortoolsConfig.cmake.in',
     '''
 if(@USE_SCIP@)
-  if(NOT scip_FOUND AND NOT TARGET libscip)
+  if(NOT TARGET libscip)
     find_dependency(SCIP REQUIRED)
   endif()
 endif()
@@ -81,13 +81,13 @@ full_patch.append(Addition(
     Path.cwd()/'examples'/'cpp'/'linear_programming.cc',
     '  RunLinearProgrammingExample("XPRESS_LP");\n',
     '  RunLinearProgrammingExample("SIRIUS_LP");\n'
-))
+    ))
 
 full_patch.append(Addition(
     Path.cwd()/'examples'/'dotnet'/'cslinearprogramming.cs',
     '        RunLinearProgrammingExample("XPRESS_LP");\n',
     '        RunLinearProgrammingExample("SIRIUS_LP");\n'
-))
+    ))
 
 full_patch.append(Addition(
     Path.cwd()/'examples'/'java'/'LinearProgramming.java',
