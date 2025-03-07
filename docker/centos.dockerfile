@@ -44,7 +44,7 @@ RUN cd /applis &&\
     python3 -m pip install --upgrade pip &&\
     mkdir xpress &&\
     cd xpress &&\
-    python3 -m pip download --only-binary=:all: --python-version 310  "xpress>=9.2,<9.3" &&\
+    python3 -m pip download --only-binary=:all: --python-version 310  "xpress==9.2.7" &&\
     unzip xpr*.whl &&\
     XPRESS_DIR=$PWD/xpress &&\
     echo "export XPRESSDIR=$XPRESS_DIR" >> /etc/bashrc &&\
@@ -71,7 +71,7 @@ RUN cmake -S. -Bbuild \
     -DBUILD_SAMPLES=OFF \
     -DBUILD_FLATZINC=OFF \
     -Dsirius_solver_DIR="$SIRIUS_CMAKE_DIR" \
-    -DUSE_HIGHS=OFF \
+    -DUSE_HIGHS=ON \
     -DUSE_PDLP=ON
 
 RUN cmake --build build --target all -j4
