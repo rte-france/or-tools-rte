@@ -124,7 +124,7 @@ jobs:
           --target ALL_BUILD
           -v -j2 >> ${{ github.workspace }}/build_logs.txt
 
-      - name: Upload build logs
+      - name: Upload build logs on failure
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
@@ -140,7 +140,7 @@ jobs:
           -E "(_xpress|_sirius)"
           -E "(_xpress|_sirius)" >> ${{ github.workspace }}/tests_not_xpress_logs.txt
 
-      - name: Upload test logs
+      - name: Upload test logs on failure
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:

@@ -181,6 +181,12 @@ full_patch.append(Addition(
     '  friend class XpressInterface;\n',
     '  friend class SiriusInterface;\n'))
 
+# Disable "cxx_cpp_variable_intervals_sat" example (fails in windows CI)
+full_patch.append(Addition(
+    Path.cwd()/'examples'/'cpp'/'CMakeLists.txt',
+    'list(FILTER CXX_SRCS EXCLUDE REGEX ".*/weighted_tardiness_sat.cc")\n',
+    'list(FILTER CXX_SRCS EXCLUDE REGEX ".*/variable_intervals_sat.cc")\n'))
+
 # run patch
 for a in full_patch:
     replace_in_file(a.filepath, a.search, a.search+a.add)
