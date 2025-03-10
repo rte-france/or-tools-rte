@@ -4,6 +4,9 @@ from dataclasses import dataclass
 def replace_in_file(filepath, search, replace):
     with open(filepath, 'r', encoding="utf8") as file:
         data = file.read()
+        if search not in data:
+            print(f"File {filepath}: string {search} not found, replace skipped")
+            return
         if replace not in data:
             data = data.replace(search, replace)
         else:

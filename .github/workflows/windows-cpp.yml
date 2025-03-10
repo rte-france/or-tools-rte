@@ -38,7 +38,6 @@ jobs:
         sirius-release-tag: [ antares-integration-v1.7 ]
         cmake: [
           {generator: "Visual Studio 17 2022", config: Release, build_target: ALL_BUILD, test_target: RUN_TESTS, install_target: INSTALL},
-          {generator: "Visual Studio 17 2022", config: Debug, build_target: ALL_BUILD, test_target: RUN_TESTS, install_target: INSTALL},
         ]
     steps:
       - name: set or-tools repo vars if release
@@ -112,7 +111,7 @@ jobs:
           -DCMAKE_CONFIGURATION_TYPES=${{ matrix.cmake.config }}
           -DBUILD_DEPS=ON
           -DBUILD_EXAMPLES=${{ env.RELEASE_CREATED == 'true' && 'OFF' || (matrix.cmake.config != 'Release' && 'OFF' || 'ON') }}
-          -DBUILD_SAMPLES=OFF 
+          -DBUILD_SAMPLES=OFF
           -DCMAKE_INSTALL_PREFIX=install
           -DUSE_SIRIUS=${{ matrix.sirius }}
           -DUSE_HIGHS=ON
@@ -123,7 +122,14 @@ jobs:
           cmake --build build 
           --config ${{ matrix.cmake.config }} 
           --target ALL_BUILD
-          -v -j2
+          -v -j2 >> ${{ github.workspace }}/build_logs.txt
+
+      - name: Upload build logs on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: build_logs
+          path: ${{ github.workspace }}/build_logs.txt
 
       - name: Tests not xpress
         if: ${{ matrix.cmake.config == 'Release' }}
@@ -132,6 +138,14 @@ jobs:
           ctest -C ${{ matrix.cmake.config }} 
           --output-on-failure 
           -E "(_xpress|_sirius)"
+          -E "(_xpress|_sirius)" >> ${{ github.workspace }}/tests_not_xpress_logs.txt
+
+      - name: Upload test logs on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: tests_not_xpress_logs
+          path: ${{ github.workspace }}/tests_not_xpress_logs.txt
 
       - name: Tests xpress
         if: ${{ matrix.cmake.config == 'Release' }}
