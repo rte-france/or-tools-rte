@@ -109,7 +109,7 @@ jobs:
           -DBUILD_CXX_SAMPLES=OFF  -DBUILD_CXX_EXAMPLES=OFF
           -DBUILD_PYTHON=ON
           -DBUILD_SAMPLES=OFF
-          -DUSE_HIGHS=OFF
+          -DUSE_HIGHS=ON
           -DUSE_PDLP=ON
 
       - name: Build

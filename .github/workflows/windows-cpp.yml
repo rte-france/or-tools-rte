@@ -112,6 +112,9 @@ jobs:
           -DCMAKE_CONFIGURATION_TYPES=${{ matrix.cmake.config }}
           -DBUILD_DEPS=ON
           -DCMAKE_INSTALL_PREFIX=install
+          -DUSE_SIRIUS=${{ matrix.sirius }}
+          -DUSE_HIGHS=ON
+          -DUSE_PDLP=ON
 
       - name: Build
         run: >
