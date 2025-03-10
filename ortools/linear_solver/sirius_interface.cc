@@ -238,6 +238,13 @@ namespace operations_research {
 
 		// vector to store TypeDeBorneDeLaVariable values
 		std::vector<int> varBoundsTypeValues;
+	private:
+	  // Only log 1st call to some functions to avoid log spam
+	  struct
+	  {
+	    bool firstPrimalTolerance = true;
+	    bool firstDualTolerance = true;
+	  } log;
 	};
 
 	// Creates a LP/MIP instance.
@@ -1065,13 +1072,19 @@ namespace operations_research {
 	}
 
 	void SiriusInterface::SetPrimalTolerance(double value) {
+	  if (log.firstPrimalTolerance)
+	  {
 		LOG(WARNING) << "SetPrimalTolerance not implemented for sirius_interface";
-		//FIXME CHECK_STATUS(SRSsetdblcontrol(mLp, SRS_FEASTOL, value));
+		log.firstPrimalTolerance = false;
+	  }
 	}
 
 	void SiriusInterface::SetDualTolerance(double value) {
+	  if (log.firstDualTolerance)
+	  {
 		LOG(WARNING) << "SetDualTolerance not implemented for sirius_interface";
-		//FIXME CHECK_STATUS(SRSsetdblcontrol(mLp, SRS_OPTIMALITYTOL, value));
+		log.firstDualTolerance = false;
+	  }
 	}
 
 	void SiriusInterface::SetPresolveMode(int value) {
