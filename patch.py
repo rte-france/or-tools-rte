@@ -272,6 +272,12 @@ replacements.append(Addition(
     Path.cwd()/'ortools'/'math_opt'/'solvers'/'gscip_solver.cc',
     'MATH_OPT_REGISTER_SOLVER(SOLVER_TYPE_GSCIP, GScipSolver::New)',
     ''))
+if newer_than_v9_12:
+    replacements.append(Addition(
+        Path.cwd()/'ortools'/'math_opt'/'solvers'/'xpress_solver.cc',
+        'MATH_OPT_REGISTER_SOLVER(SOLVER_TYPE_XPRESS, XpressSolver::New)',
+        ''))
+
 
 # run patch
 for a in additions:
