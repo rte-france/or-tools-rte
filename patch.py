@@ -219,11 +219,14 @@ if newer_than_v9_12:
           const ModelProto& model, const InitArgs& init_args);
     };
     #endif
+    #if USE_XPRESS
     class XpressSolver : public SolverInterface {
     public:
       static absl::StatusOr<std::unique_ptr<XpressSolver>> New(
-          const ModelProto& model, const InitArgs& init_args);
+      const ModelProto& input_model,
+      const SolverInterface::InitArgs& init_args);
     };
+    #endif
     
     AllSolversRegistry::AllSolversRegistry() {
     #if USE_PDLP
@@ -232,7 +235,9 @@ if newer_than_v9_12:
     #if USE_SCIP
       this->Register(SOLVER_TYPE_GSCIP, GScipSolver::New);
     #endif
+    #if USE_XPRESS
       this->Register(SOLVER_TYPE_XPRESS, XpressSolver::New);
+    #endif
     }
         '''))
 else:
