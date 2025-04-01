@@ -221,7 +221,7 @@ if newer_than_v9_12:
     #endif
     class XpressSolver : public SolverInterface {
     public:
-      static absl::StatusOr<std::unique_ptr<SolverInterface>> New(
+      static absl::StatusOr<std::unique_ptr<XpressSolver>> New(
           const ModelProto& model, const InitArgs& init_args);
     };
     
