@@ -6,7 +6,7 @@ with open('Version.txt', 'r') as f:
     data = f.readlines()
     version_major = int(data[0].split('=')[1])
     version_minor = int(data[1].split('=')[1])
-newer_than_v9_12 = version_major > 9 or (version_major == 9 and version_minor >= 12)
+newer_than_v9_12 = (version_major, version_minor) >= (9, 12)
 
 additions: List[Addition] = []
 replacements: List[Addition] = []
