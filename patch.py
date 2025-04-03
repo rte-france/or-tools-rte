@@ -2,10 +2,17 @@ from pathlib import Path
 from typing import List
 from patch_utils import *
 
-full_patch: List[Addition] = []
+with open('Version.txt', 'r') as f:
+    data = f.readlines()
+    version_major = int(data[0].split('=')[1])
+    version_minor = int(data[1].split('=')[1])
+newer_than_v9_12 = (version_major, version_minor) >= (9, 12)
+
+additions: List[Addition] = []
+replacements: List[Addition] = []
 
 # add the USE_SIRIUS configuration flag in CMakeLists.txt
-full_patch.append(Addition(
+additions.append(Addition(
     Path.cwd()/'CMakeLists.txt',
     '''option(USE_CPLEX "Use the CPLEX solver" OFF)
 message(STATUS "CPLEX support: ${USE_CPLEX}")
@@ -18,12 +25,12 @@ message(STATUS "SIRIUS support: ${USE_SIRIUS}")
 
 # add the USE_SIRIUS configuration flag in cpp.cmake
 
-full_patch.append(
+additions.append(
     Addition(
-    Path.cwd()/'cmake'/'cpp.cmake',
-    '  ${SCIP_DEPS}\n',
-    '  $<$<BOOL:${USE_SIRIUS}>:sirius_solver>\n'))
-full_patch.append(Addition(
+        Path.cwd()/'cmake'/'cpp.cmake',
+        '  ${SCIP_DEPS}\n' if newer_than_v9_12 else '  $<$<BOOL:${USE_SCIP}>:libscip>\n',
+        '  $<$<BOOL:${USE_SIRIUS}>:sirius_solver>\n'))
+additions.append(Addition(
     Path.cwd()/'cmake'/'cpp.cmake',
     '''
 if(USE_CPLEX)
@@ -37,7 +44,7 @@ endif()
 '''))
 
 # add the USE_SIRIUS configuration flag in deps.cmake
-full_patch.append(Addition(
+additions.append(Addition(
     Path.cwd()/'cmake'/'system_deps.cmake',
     '''
 if(USE_CPLEX)
@@ -56,7 +63,7 @@ endif(USE_SIRIUS)
 '''))
 
 # add the USE_SIRIUS configuration flag in ortoolsConfig.cmake.in
-full_patch.append(Addition(
+additions.append(Addition(
     Path.cwd()/'cmake'/'ortoolsConfig.cmake.in',
     '''
 if(@USE_SCIP@)
@@ -77,19 +84,19 @@ endif()
 '''))
 
 # add SIRIUS execution in example files
-full_patch.append(Addition(
+additions.append(Addition(
     Path.cwd()/'examples'/'cpp'/'linear_programming.cc',
     '  RunLinearProgrammingExample("XPRESS_LP");\n',
     '  RunLinearProgrammingExample("SIRIUS_LP");\n'
-    ))
+))
 
-full_patch.append(Addition(
+additions.append(Addition(
     Path.cwd()/'examples'/'dotnet'/'cslinearprogramming.cs',
     '        RunLinearProgrammingExample("XPRESS_LP");\n',
     '        RunLinearProgrammingExample("SIRIUS_LP");\n'
-    ))
+))
 
-full_patch.append(Addition(
+additions.append(Addition(
     Path.cwd()/'examples'/'java'/'LinearProgramming.java',
     '''    runLinearProgrammingExample("CLP", false);
 ''',
@@ -97,18 +104,18 @@ full_patch.append(Addition(
     runLinearProgrammingExample("SIRIUS_LP", false);
 '''))
 
-full_patch.append(Addition(
+additions.append(Addition(
     Path.cwd()/'examples'/'python'/'linear_programming.py',
     '    RunLinearExampleCppStyleAPI("XPRESS_LP")\n',
     '    RunLinearExampleCppStyleAPI("SIRIUS_LP")\n'))
 
 # add the USE_SIRIUS configuration flag in ortools/linear_solver/CMakeLists.txt
-full_patch.append(Addition(
+additions.append(Addition(
     Path.cwd()/'ortools'/'linear_solver'/'CMakeLists.txt',
     '  $<$<BOOL:${USE_SCIP}>:libscip>\n',
     '  $<$<BOOL:${USE_SIRIUS}>:sirius_solver>\n'))
 
-full_patch.append(Addition(
+additions.append(Addition(
     Path.cwd()/'ortools'/'linear_solver'/'CMakeLists.txt',
     '''  add_test(NAME cxx_unittests_xpress_interface COMMAND test_xprs_interface)
 ''',
@@ -123,7 +130,7 @@ full_patch.append(Addition(
 '''))
 
 # add the SIRIUS support in ortools/linear_solver/linear_solver.cc & .h
-full_patch.append(Addition(
+additions.append(Addition(
     Path.cwd()/'ortools'/'linear_solver'/'linear_solver.cc',
     '''extern MPSolverInterface* BuildXpressInterface(bool mip,
                                                MPSolver* const solver);
@@ -133,7 +140,7 @@ extern MPSolverInterface* BuildSiriusInterface(bool mip, MPSolver* const solver)
 #endif
 '''))
 
-full_patch.append(Addition(
+additions.append(Addition(
     Path.cwd()/'ortools'/'linear_solver'/'linear_solver.cc',
     '''      return BuildXpressInterface(false, solver);
 ''',
@@ -145,7 +152,7 @@ full_patch.append(Addition(
 #endif
 '''))
 
-full_patch.append(Addition(
+additions.append(Addition(
     Path.cwd()/'ortools'/'linear_solver'/'linear_solver.cc',
     '''#ifdef USE_CPLEX
   if (problem_type == CPLEX_LINEAR_PROGRAMMING ||
@@ -160,7 +167,7 @@ full_patch.append(Addition(
 #endif
 '''))
 
-full_patch.append(Addition(
+additions.append(Addition(
     Path.cwd()/'ortools'/'linear_solver'/'linear_solver.cc',
     '''        {MPSolver::XPRESS_MIXED_INTEGER_PROGRAMMING, "xpress"},
 ''',
@@ -168,7 +175,7 @@ full_patch.append(Addition(
         {MPSolver::SIRIUS_MIXED_INTEGER_PROGRAMMING, "sirius"},
 '''))
 
-full_patch.append(Addition(
+additions.append(Addition(
     Path.cwd()/'ortools'/'linear_solver'/'linear_solver.h',
     '''    COPT_MIXED_INTEGER_PROGRAMMING = 104,
 ''',
@@ -176,17 +183,109 @@ full_patch.append(Addition(
     SIRIUS_MIXED_INTEGER_PROGRAMMING = 106,
 '''))
 
-full_patch.append(Addition(
+additions.append(Addition(
     Path.cwd()/'ortools'/'linear_solver'/'linear_solver.h',
     '  friend class XpressInterface;\n',
     '  friend class SiriusInterface;\n'))
 
 # Disable "cxx_cpp_variable_intervals_sat" example (fails in windows CI)
-full_patch.append(Addition(
+additions.append(Addition(
     Path.cwd()/'examples'/'cpp'/'CMakeLists.txt',
     'list(FILTER CXX_SRCS EXCLUDE REGEX ".*/weighted_tardiness_sat.cc")\n',
     'list(FILTER CXX_SRCS EXCLUDE REGEX ".*/variable_intervals_sat.cc")\n'))
 
+# MathOpt patch : replace solver declaration
+# TODO: remove this when the following issue is resolved: https://github.com/google/or-tools/discussions/4538
+replacements.append(Addition(
+    Path.cwd()/'ortools'/'math_opt'/'core'/'solver_interface.h',
+    'AllSolversRegistry() = default;\n',
+    'AllSolversRegistry();\n'))
+if newer_than_v9_12:
+    additions.append(Addition(
+        Path.cwd()/'ortools'/'math_opt'/'core'/'solver_interface.cc',
+        'namespace {}  // namespace\n\n',
+        '''
+    #if USE_PDLP
+    class PdlpSolver : public SolverInterface {
+    public:
+      static absl::StatusOr<std::unique_ptr<SolverInterface>> New(
+          const ModelProto& model, const InitArgs& init_args);
+    };
+    #endif
+    #if USE_SCIP
+    class GScipSolver : public SolverInterface {
+    public:
+      static absl::StatusOr<std::unique_ptr<SolverInterface>> New(
+          const ModelProto& model, const InitArgs& init_args);
+    };
+    #endif
+    #if USE_XPRESS
+    class XpressSolver : public SolverInterface {
+    public:
+      static absl::StatusOr<std::unique_ptr<XpressSolver>> New(
+      const ModelProto& input_model,
+      const SolverInterface::InitArgs& init_args);
+    };
+    #endif
+    
+    AllSolversRegistry::AllSolversRegistry() {
+    #if USE_PDLP
+      this->Register(SOLVER_TYPE_PDLP, PdlpSolver::New);
+    #endif
+    #if USE_SCIP
+      this->Register(SOLVER_TYPE_GSCIP, GScipSolver::New);
+    #endif
+    #if USE_XPRESS
+      this->Register(SOLVER_TYPE_XPRESS, XpressSolver::New);
+    #endif
+    }
+        '''))
+else:
+    additions.append(Addition(
+        Path.cwd()/'ortools'/'math_opt'/'core'/'solver_interface.cc',
+        'namespace {}  // namespace\n\n',
+        '''
+    #if USE_PDLP
+    class PdlpSolver : public SolverInterface {
+    public:
+      static absl::StatusOr<std::unique_ptr<SolverInterface>> New(
+          const ModelProto& model, const InitArgs& init_args);
+    };
+    #endif
+    #if USE_SCIP
+    class GScipSolver : public SolverInterface {
+    public:
+      static absl::StatusOr<std::unique_ptr<SolverInterface>> New(
+          const ModelProto& model, const InitArgs& init_args);
+    };
+    #endif
+    
+    AllSolversRegistry::AllSolversRegistry() {
+    #if USE_PDLP
+      this->Register(SOLVER_TYPE_PDLP, PdlpSolver::New);
+    #endif
+    #if USE_SCIP
+      this->Register(SOLVER_TYPE_GSCIP, GScipSolver::New);
+    #endif
+    }
+        '''))
+replacements.append(Addition(
+    Path.cwd()/'ortools'/'math_opt'/'solvers'/'pdlp_solver.cc',
+    'MATH_OPT_REGISTER_SOLVER(SOLVER_TYPE_PDLP, PdlpSolver::New);',
+    ''))
+replacements.append(Addition(
+    Path.cwd()/'ortools'/'math_opt'/'solvers'/'gscip_solver.cc',
+    'MATH_OPT_REGISTER_SOLVER(SOLVER_TYPE_GSCIP, GScipSolver::New)',
+    ''))
+if newer_than_v9_12:
+    replacements.append(Addition(
+        Path.cwd()/'ortools'/'math_opt'/'solvers'/'xpress_solver.cc',
+        'MATH_OPT_REGISTER_SOLVER(SOLVER_TYPE_XPRESS, XpressSolver::New)',
+        ''))
+
+
 # run patch
-for a in full_patch:
-    replace_in_file(a.filepath, a.search, a.search+a.add)
+for a in additions:
+    add_in_file(a.filepath, a.search, a.search+a.add)
+for a in replacements:
+    replace_in_file(a.filepath, a.search, a.add)
