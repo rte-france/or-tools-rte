@@ -113,7 +113,7 @@ class XpressHeaderParser(object):
                                      "XPRSsetintcontrol", "XPRSsetintcontrol64", "XPRSsetdblcontrol",
                                      "XPRSsetstrcontrol", "XPRSgetintcontrol", "XPRSgetintcontrol64",
                                      "XPRSgetdblcontrol", "XPRSgetstringcontrol", "XPRSgetintattrib",
-                                     "XPRSgetdblattrib", "XPRSloadlp", "XPRSloadlp64", "XPRSgetobj", "XPRSgetrhs",
+                                     "XPRSgetdblattrib", "XPRSgetobj", "XPRSgetrhs",
                                      "XPRSgetrhsrange", "XPRSgetlb", "XPRSgetub", "XPRSgetcoef", "XPRSaddrows",
                                      "XPRSdelrows", "XPRSaddcols", "XPRSaddnames", "XPRSgetnames", "XPRSdelcols",
                                      "XPRSchgcoltype", "XPRSloadbasis",
@@ -124,7 +124,7 @@ class XpressHeaderParser(object):
                                      "XPRSsetcbmessage", "XPRSsetprobname",
                                      "XPRSaddmipsol", "XPRSaddcbintsol", "XPRSremovecbintsol",
                                      "XPRSinterrupt", "XPRSlpoptimize", "XPRSmipoptimize", "XPRSoptimize", "XPRSsetindicators",
-                                     "XPRSgetcontrolinfo", "XPRSgetduals", "XPRSgetredcosts", "XPRSchgmqobj"}
+                                     "XPRSgetcontrolinfo", "XPRSgetduals", "XPRSgetredcosts", "XPRSchgmqobj", "XPRSdelobj"}
         self.__missing_required_functions = self.__required_functions
         self.__XPRSprob_section = False
 
