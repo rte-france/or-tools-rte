@@ -8,13 +8,6 @@ on:
         description: 'rte-france/or-tools branch name'
         required: true
         default: 'main'
-  push:
-    branches:
-      - main
-      - feature/*
-      - merge*
-      - fix/*
-      - release/*
   release:
     types: [ created ]
 
