@@ -87,7 +87,8 @@ class XpressHeaderParser(object):
         self.__int64_parameters = ''
         self.__int64_parameters_unittest = ''
         # These are the definitions required for compiling the XPRESS interface, excluding control parameters
-        self.__required_defines = {"XPRS_STOP_USER", "XPRS_TYPE_NOTDEFINED", "XPRS_TYPE_INT", "XPRS_TYPE_INT64",
+        self.__required_defines = {"XPRS_UUID",
+                                    "XPRS_STOP_USER", "XPRS_TYPE_NOTDEFINED", "XPRS_TYPE_INT", "XPRS_TYPE_INT64",
                                    "XPRS_TYPE_DOUBLE", "XPRS_PLUSINFINITY", "XPRS_MINUSINFINITY",
                                    "XPRS_MAXBANNERLENGTH", "XPVERSION",
                                    "XPRS_LPOBJVAL", "XPRS_MIPOBJVAL", "XPRS_BESTBOUND", "XPRS_OBJRHS", "XPRS_OBJSENSE",
@@ -110,10 +111,10 @@ class XpressHeaderParser(object):
         # These are the functions required for compiling the XPRESS interface
         self.__required_functions = {"XPRScreateprob", "XPRSdestroyprob", "XPRSinit", "XPRSfree", "XPRSgetlicerrmsg",
                                      "XPRSlicense", "XPRSgetbanner", "XPRSgetversion", "XPRSsetdefaultcontrol",
-                                     "XPRSsetintcontrol", "XPRSsetintcontrol64", "XPRSsetdblcontrol",
+                                     "XPRSsetintcontrol", "XPRSsetintcontrol64", "XPRSsetdblcontrol", "XPRSreadprob",
                                      "XPRSsetstrcontrol", "XPRSgetintcontrol", "XPRSgetintcontrol64",
                                      "XPRSgetdblcontrol", "XPRSgetstringcontrol", "XPRSgetintattrib",
-                                     "XPRSgetdblattrib", "XPRSgetobj", "XPRSgetrhs",
+                                     "XPRSgetdblattrib", "XPRSgetstringattrib", "XPRSgetobj", "XPRSgetrhs",
                                      "XPRSgetrhsrange", "XPRSgetlb", "XPRSgetub", "XPRSgetcoef", "XPRSaddrows",
                                      "XPRSdelrows", "XPRSaddcols", "XPRSaddnames", "XPRSgetnames", "XPRSdelcols",
                                      "XPRSchgcoltype", "XPRSloadbasis",
