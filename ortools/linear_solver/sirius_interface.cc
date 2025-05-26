@@ -1301,12 +1301,9 @@ MPSolver::ResultStatus SiriusInterface::Solve(MPSolverParameters const& param) {
   }
   if (IsMIP()) SRSsetintparams(mLp, SRS_FORCE_PNE, 1);
 
-  if (has_basis) {
-    status =
-        SRSoptimizewithinitialbasis(mLp, column_basis.data(), row_basis.data());
-  } else {
-    status = SRSoptimize(mLp);
-  }
+  status = has_basis ? SRSoptimizewithinitialbasis(mLp, column_basis.data(),
+                                                   row_basis.data())
+                     : SRSoptimize(mLp);
   has_basis = false;
 
   if (status) {
