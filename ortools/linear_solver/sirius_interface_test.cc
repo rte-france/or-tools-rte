@@ -1,4 +1,3 @@
-// #include "ortools/linear_solver/sirius_interface.cc"
 #include "gtest/gtest.h"
 #include "ortools/linear_solver/linear_solver.h"
 extern "C" {
@@ -868,6 +867,97 @@ TEST(TestSiriusInterface, DISABLED_SolveLP) {
   EXPECT_NEAR(c1->dual_value(), 0.2, 1e-8);
   EXPECT_NEAR(c2->dual_value(), 0, 1e-8);
   EXPECT_NEAR(c3->dual_value(), 0.6, 1e-8);
+}
+
+void buildSimpleLp(MPSolver* solver, bool permute, bool add_noise) {
+  auto addX = [add_noise, solver]() {
+    return solver->MakeNumVar(0 + (add_noise ? 0.1 : 0),
+                              100 + (add_noise ? 5 : 0), "x");
+  };
+  auto addY = [add_noise, solver]() {
+    return solver->MakeNumVar(0 - (add_noise ? 0.2 : 0),
+                              100 + (add_noise ? 9 : 0), "y");
+  };
+
+  MPVariable* x = nullptr;
+  MPVariable* y = nullptr;
+  if (!permute) {
+    x = addX();
+    y = addY();
+  } else {
+    y = addY();
+    x = addX();
+  }
+
+  solver->MutableObjective()->SetMaximization();
+  solver->MutableObjective()->SetCoefficient(x, 5 + (add_noise ? 0.1 : 0));
+  solver->MutableObjective()->SetCoefficient(y, 4 - (add_noise ? 0.5 : 0));
+
+  auto addC1 = [add_noise, solver, x, y]() {
+    MPConstraint* c1 = solver->MakeRowConstraint(
+        -solver->infinity(), 30 + (add_noise ? 2 : 0), "c1");
+    c1->SetCoefficient(x, 1);
+    c1->SetCoefficient(y, 2);
+  };
+  auto addC2 = [add_noise, solver, x, y]() {
+    MPConstraint* c2 = solver->MakeRowConstraint(
+        -solver->infinity(), 20 - (add_noise ? 3 : 0), "c2");
+    c2->SetCoefficient(x, 2);
+    c2->SetCoefficient(y, 1);
+  };
+  auto addC3 = [add_noise, solver, x, y]() {
+    MPConstraint* c3 = solver->MakeRowConstraint(
+        -solver->infinity(), 199 + (add_noise ? 4 : 0), "c3");
+    c3->SetCoefficient(x, 20);
+    c3->SetCoefficient(y, 10);
+  };
+
+  if (!permute) {
+    addC1();
+    addC2();
+    addC3();
+  } else {
+    addC2();
+    addC3();
+    addC1();
+  }
+}
+
+TEST(TestSiriusInterface, SetStartingLpBasis) {
+  // Build an LP with 2 variables and 3 constraints
+  MPSolver solver1("SIRIUS_LP", MPSolver::SIRIUS_LINEAR_PROGRAMMING);
+  buildSimpleLp(&solver1, false, false);
+  // Solve it (actually SIRIUS needs >1000 iterations)
+  solver1.Solve();
+  EXPECT_GT(solver1.iterations(), 500);
+  // Extract base into maps
+  std::map<std::string, MPSolver::BasisStatus> column_status_map;
+  for (int i = 0; i < solver1.NumVariables(); ++i) {
+    column_status_map[solver1.variable(i)->name()] =
+        solver1.variable(i)->basis_status();
+  }
+  std::map<std::string, MPSolver::BasisStatus> row_status_map;
+  for (int i = 0; i < solver1.NumConstraints(); ++i) {
+    row_status_map[solver1.constraint(i)->name()] =
+        solver1.constraint(i)->basis_status();
+  }
+  // Re-construct LP, but permute variables and comumns, and add noise
+  MPSolver solver2("SIRIUS_LP", MPSolver::SIRIUS_LINEAR_PROGRAMMING);
+  buildSimpleLp(&solver2, true, true);
+  // Fetch base from first solve
+  std::vector<MPSolver::BasisStatus> column_status(solver2.NumVariables());
+  for (int i = 0; i < solver2.NumVariables(); ++i) {
+    column_status[i] = column_status_map[solver2.variable(i)->name()];
+  }
+  std::vector<MPSolver::BasisStatus> row_status(solver2.NumConstraints());
+  for (int i = 0; i < solver2.NumConstraints(); ++i) {
+    row_status[i] = row_status_map[solver2.constraint(i)->name()];
+  }
+  // Send base to solver & solve
+  solver2.SetStartingLpBasis(column_status, row_status);
+  solver2.Solve();
+  // Expect much fewer iterations
+  EXPECT_LT(solver2.iterations(), 10);
 }
 
 }  // namespace operations_research
