@@ -35,7 +35,7 @@ jobs:
       matrix:
         sirius: [ON, OFF]
         os: [windows-latest]
-        sirius-release-tag: [ antares-integration-v1.7 ]
+        sirius-release-tag: [ antares-integration-v1.8 ]
         cmake: [
           {generator: "Visual Studio 17 2022", config: Release, build_target: ALL_BUILD, test_target: RUN_TESTS, install_target: INSTALL},
         ]
