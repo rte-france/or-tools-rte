@@ -672,6 +672,8 @@ int64_t SiriusInterface::nodes() const {
 // Transform a SIRIUS basis status to an MPSolver basis status.
 MPSolver::BasisStatus SiriusInterface::xformBasisStatus(
     char sirius_basis_status) {
+  // TODO: for now, only statuses 0, 4 & 5 have been seen to be output by srs.
+  // Other statuses may not be mapped correctly => to check
   switch (sirius_basis_status) {
     case SRS_BASIC:
     case SRS_AT_LOWER:
@@ -693,6 +695,8 @@ MPSolver::BasisStatus SiriusInterface::xformBasisStatus(
 // Transform a MPSolver basis status to an SIRIUS basis status.
 int SiriusInterface::xformSiriusBasisStatus(
     MPSolver::BasisStatus basis_status) {
+  // TODO: for now, only statuses 0, 4 & 5 have been seen to be output by srs.
+  // Other statuses may not be mapped correctly => to check
   switch (basis_status) {
     case MPSolver::AT_LOWER_BOUND:
       return SRS_FREE_LOWER;
