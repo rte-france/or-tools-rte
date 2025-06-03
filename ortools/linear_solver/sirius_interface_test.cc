@@ -931,15 +931,12 @@ TEST(TestSiriusInterface, SetStartingLpBasis) {
   solver1.Solve();
   EXPECT_GT(solver1.iterations(), 500);
   // Extract base into maps
-  std::map<std::string, MPSolver::BasisStatus> column_status_map;
-  for (int i = 0; i < solver1.NumVariables(); ++i) {
-    column_status_map[solver1.variable(i)->name()] =
-        solver1.variable(i)->basis_status();
+  std::map<std::string, MPSolver::BasisStatus> status_map;
+  for (auto* variable : solver1.variables()) {
+    status_map[variable->name()] = variable->basis_status();
   }
-  std::map<std::string, MPSolver::BasisStatus> row_status_map;
-  for (int i = 0; i < solver1.NumConstraints(); ++i) {
-    row_status_map[solver1.constraint(i)->name()] =
-        solver1.constraint(i)->basis_status();
+  for (auto* constraint : solver1.constraints()) {
+    status_map[constraint->name()] = constraint->basis_status();
   }
   // Re-construct LP, but permute variables and comumns, and add noise
   MPSolver solver2("SIRIUS_LP", MPSolver::SIRIUS_LINEAR_PROGRAMMING);
@@ -947,11 +944,11 @@ TEST(TestSiriusInterface, SetStartingLpBasis) {
   // Fetch base from first solve
   std::vector<MPSolver::BasisStatus> column_status(solver2.NumVariables());
   for (int i = 0; i < solver2.NumVariables(); ++i) {
-    column_status[i] = column_status_map[solver2.variable(i)->name()];
+    column_status[i] = status_map[solver2.variable(i)->name()];
   }
   std::vector<MPSolver::BasisStatus> row_status(solver2.NumConstraints());
   for (int i = 0; i < solver2.NumConstraints(); ++i) {
-    row_status[i] = row_status_map[solver2.constraint(i)->name()];
+    row_status[i] = status_map[solver2.constraint(i)->name()];
   }
   // Send base to solver & solve
   solver2.SetStartingLpBasis(column_status, row_status);

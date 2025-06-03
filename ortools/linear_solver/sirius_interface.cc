@@ -284,7 +284,6 @@ SiriusInterface::SiriusInterface(MPSolver* const solver, bool mip)
 void SiriusInterface::SetStartingLpBasis(
     const std::vector<MPSolver::BasisStatus>& variable_statuses,
     const std::vector<MPSolver::BasisStatus>& constraint_statuses) {
-  has_basis = true;
   if (variable_statuses.size() != solver_->NumVariables()) {
     LOG(ERROR) << "variable_statuses was expected to have "
                << solver_->NumVariables() << " elements, but it has "
@@ -299,6 +298,7 @@ void SiriusInterface::SetStartingLpBasis(
                << ". The starting LP basis was ignored." << std::endl;
     return;
   }
+  has_basis = true;
   column_basis.resize(solver_->NumVariables());
   for (int i = 0; i < variable_statuses.size(); ++i) {
     column_basis[i] = xformSiriusBasisStatus(variable_statuses[i]);
