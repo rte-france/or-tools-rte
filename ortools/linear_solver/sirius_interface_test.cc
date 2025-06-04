@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "ortools/linear_solver/linear_solver.h"
+#include "linear_solver.h"
 extern "C" {
 #include "srs_api.h"
 }
@@ -931,30 +931,46 @@ TEST(TestSiriusInterface, SetStartingLpBasis) {
   solver1.Solve();
   EXPECT_GT(solver1.iterations(), 500);
   // Extract base into maps
-  std::map<std::string, MPSolver::BasisStatus> status_map;
+  std::map<std::string, MPSolver::BasisStatus> solve1_statuses;
   for (auto* variable : solver1.variables()) {
-    status_map[variable->name()] = variable->basis_status();
+    solve1_statuses[variable->name()] = variable->basis_status();
   }
   for (auto* constraint : solver1.constraints()) {
-    status_map[constraint->name()] = constraint->basis_status();
+    solve1_statuses[constraint->name()] = constraint->basis_status();
   }
-  // Re-construct LP, but permute variables and comumns, and add noise
+  // Re-construct LP, but permute variables and columns
   MPSolver solver2("SIRIUS_LP", MPSolver::SIRIUS_LINEAR_PROGRAMMING);
-  buildSimpleLp(&solver2, true, true);
+  buildSimpleLp(&solver2, true, false);
   // Fetch base from first solve
   std::vector<MPSolver::BasisStatus> column_status(solver2.NumVariables());
   for (int i = 0; i < solver2.NumVariables(); ++i) {
-    column_status[i] = status_map[solver2.variable(i)->name()];
+    column_status[i] = solve1_statuses[solver2.variable(i)->name()];
   }
   std::vector<MPSolver::BasisStatus> row_status(solver2.NumConstraints());
   for (int i = 0; i < solver2.NumConstraints(); ++i) {
-    row_status[i] = status_map[solver2.constraint(i)->name()];
+    row_status[i] = solve1_statuses[solver2.constraint(i)->name()];
   }
   // Send base to solver & solve
   solver2.SetStartingLpBasis(column_status, row_status);
   solver2.Solve();
   // Expect much fewer iterations
   EXPECT_LT(solver2.iterations(), 10);
+  // Expect all statues are the same as solve #1
+  for (auto* variable : solver2.variables()) {
+    EXPECT_EQ(variable->basis_status(), solve1_statuses[variable->name()]);
+  }
+  for (auto* constraint : solver2.constraints()) {
+    EXPECT_EQ(constraint->basis_status(), solve1_statuses[constraint->name()]);
+  }
+
+  // Re-construct LP, but permute variables and columns, and add noise
+  MPSolver solver3("SIRIUS_LP", MPSolver::SIRIUS_LINEAR_PROGRAMMING);
+  buildSimpleLp(&solver3, true, true);
+  // Send base to solver & solve
+  solver3.SetStartingLpBasis(column_status, row_status);
+  solver3.Solve();
+  // Only expect fewer iterations (base doesn't stay the same, because of noise)
+  EXPECT_LT(solver3.iterations(), 10);
 }
 
 }  // namespace operations_research
