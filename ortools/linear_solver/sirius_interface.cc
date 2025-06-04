@@ -88,6 +88,10 @@ class SiriusInterface : public MPSolverInterface {
   explicit SiriusInterface(MPSolver* const solver, bool mip);
   ~SiriusInterface();
 
+  void SetStartingLpBasis(
+      const std::vector<MPSolver::BasisStatus>& variable_statuses,
+      const std::vector<MPSolver::BasisStatus>& constraint_statuses) override;
+
   // Sets the optimization direction (min/max).
   virtual void SetOptimizationDirection(bool maximize);
 
@@ -193,10 +197,14 @@ class SiriusInterface : public MPSolverInterface {
 
   // Transform SIRIUS basis status to MPSolver basis status.
   static MPSolver::BasisStatus xformBasisStatus(char sirius_basis_status);
+  static int xformSiriusBasisStatus(MPSolver::BasisStatus basis_status);
 
  private:
   SRS_PROBLEM* mLp;
   bool const mMip;
+  bool has_basis = false;
+  std::vector<int> column_basis;
+  std::vector<int> row_basis;
   // Incremental extraction.
   // Without incremental extraction we have to re-extract the model every
   // time we perform a solve. Due to the way the Reset() function is
@@ -271,6 +279,34 @@ SiriusInterface::SiriusInterface(MPSolver* const solver, bool mip)
 
   // FIXME CHECK_STATUS(SRSchgobjsense(mLp, maximize_ ? SRS_OBJ_MAXIMIZE :
   // SRS_OBJ_MINIMIZE));
+}
+
+void SiriusInterface::SetStartingLpBasis(
+    const std::vector<MPSolver::BasisStatus>& variable_statuses,
+    const std::vector<MPSolver::BasisStatus>& constraint_statuses) {
+  if (variable_statuses.size() != solver_->NumVariables()) {
+    LOG(ERROR) << "variable_statuses was expected to have "
+               << solver_->NumVariables() << " elements, but it has "
+               << variable_statuses.size()
+               << ". The starting LP basis was ignored." << std::endl;
+    return;
+  }
+  if (constraint_statuses.size() != solver_->NumConstraints()) {
+    LOG(ERROR) << "constraint_statuses was expected to have "
+               << solver_->NumConstraints() << " elements, but it has "
+               << constraint_statuses.size()
+               << ". The starting LP basis was ignored." << std::endl;
+    return;
+  }
+  has_basis = true;
+  column_basis.resize(solver_->NumVariables());
+  for (int i = 0; i < variable_statuses.size(); ++i) {
+    column_basis[i] = xformSiriusBasisStatus(variable_statuses[i]);
+  }
+  row_basis.resize(constraint_statuses.size());
+  for (int i = 0; i < constraint_statuses.size(); ++i) {
+    row_basis[i] = xformSiriusBasisStatus(constraint_statuses[i]);
+  }
 }
 
 SiriusInterface::~SiriusInterface() {
@@ -636,21 +672,43 @@ int64_t SiriusInterface::nodes() const {
 // Transform a SIRIUS basis status to an MPSolver basis status.
 MPSolver::BasisStatus SiriusInterface::xformBasisStatus(
     char sirius_basis_status) {
+  // TODO: for now, only statuses 0, 4 & 5 have been seen to be output by srs.
+  // Other statuses may not be mapped correctly => to check
   switch (sirius_basis_status) {
-    case SRS_AT_LOWER:
-      return MPSolver::AT_LOWER_BOUND;
     case SRS_BASIC:
-      return MPSolver::BASIC;
+    case SRS_AT_LOWER:
     case SRS_AT_UPPER:
-      return MPSolver::AT_UPPER_BOUND;
+      return MPSolver::BASIC;
     case SRS_FREE_LOWER:
+      return MPSolver::AT_LOWER_BOUND;
     case SRS_FREE_UPPER:
+      return MPSolver::AT_UPPER_BOUND;
     case SRS_FREE_ZERO:
     case SRS_BASIC_FREE:
       return MPSolver::FREE;
     default:
       LOG(DFATAL) << "Unknown SIRIUS basis status";
       return MPSolver::FREE;
+  }
+}
+
+// Transform a MPSolver basis status to an SIRIUS basis status.
+int SiriusInterface::xformSiriusBasisStatus(
+    MPSolver::BasisStatus basis_status) {
+  // TODO: for now, only statuses 0, 4 & 5 have been seen to be output by srs.
+  // Other statuses may not be mapped correctly => to check
+  switch (basis_status) {
+    case MPSolver::AT_LOWER_BOUND:
+      return SRS_FREE_LOWER;
+    case MPSolver::BASIC:
+      return SRS_BASIC;
+    case MPSolver::AT_UPPER_BOUND:
+      return SRS_FREE_UPPER;
+    case MPSolver::FREE:
+      return SRS_FREE_ZERO;
+    default:
+      LOG(WARNING) << "Unknown MPSolver basis status";
+      return SRS_BASIC_FREE;
   }
 }
 
@@ -849,7 +907,7 @@ void SiriusInterface::ExtractNewVariables() {
         //	ind[j] = j;
         // CHECK_STATUS(
         //	SRSchgcoltype(mLp, cols - last_extracted, ind.get(),
-        //ctype.get())
+        // ctype.get())
         //);
       } else {
         // Incremental extraction: we must update the ctype of the
@@ -1227,7 +1285,7 @@ MPSolver::ResultStatus SiriusInterface::Solve(MPSolverParameters const& param) {
   // std::cout << "rhs" << std::endl;
   // for (int i = 0; i < mLp->problem_mps->NbCnt; ++i)
   //	std::cout << mLp->problem_mps->SensDeLaContrainte[i] << " " <<
-  //mLp->problem_mps->Rhs[i] << std::endl;
+  // mLp->problem_mps->Rhs[i] << std::endl;
   //
   // exit(0);
 
@@ -1247,7 +1305,10 @@ MPSolver::ResultStatus SiriusInterface::Solve(MPSolverParameters const& param) {
   }
   if (IsMIP()) SRSsetintparams(mLp, SRS_FORCE_PNE, 1);
 
-  status = SRSoptimize(mLp);
+  status = has_basis ? SRSoptimizewithinitialbasis(mLp, column_basis.data(),
+                                                   row_basis.data())
+                     : SRSoptimize(mLp);
+  has_basis = false;
 
   if (status) {
     VLOG(1) << absl::StrFormat("Failed to optimize MIP. Error %d", status);

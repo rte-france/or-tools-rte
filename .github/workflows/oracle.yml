@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     container: 'oraclelinux:8'
     env:
-      SIRIUS_RELEASE_TAG: antares-integration-v1.7
+      SIRIUS_RELEASE_TAG: antares-integration-v1.8
       SWIG_BASE_NAME: swig-4.2.1
     strategy:
       fail-fast: false

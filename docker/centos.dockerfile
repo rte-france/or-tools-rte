@@ -28,7 +28,7 @@ RUN wget -q "https://cmake.org/files/v3.28/cmake-3.28.3-linux-x86_64.sh" \
 && rm cmake-3.28.3-linux-x86_64.sh
 CMD [ "/usr/bin/bash" ]
 
-ARG SIRIUS_RELEASE_TAG=antares-integration-v1.7
+ARG SIRIUS_RELEASE_TAG=antares-integration-v1.8
 
 # Download Sirius
 RUN cd /applis &&\

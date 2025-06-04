@@ -37,7 +37,7 @@ jobs:
           { shared: ON,  java: OFF, dotnet: OFF, python: ON,  python-version: "3.10", publish-cxx-or: OFF },
         ]
         sirius: [ON, OFF]
-        sirius-release-tag: [antares-integration-v1.7]
+        sirius-release-tag: [antares-integration-v1.8]
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v4
