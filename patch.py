@@ -7,6 +7,7 @@ with open('Version.txt', 'r') as f:
     version_major = int(data[0].split('=')[1])
     version_minor = int(data[1].split('=')[1])
 newer_than_v9_12 = (version_major, version_minor) >= (9, 12)
+newer_than_v9_13 = (version_major, version_minor) >= (9, 13)
 
 additions: List[Addition] = []
 replacements: List[Addition] = []
@@ -44,13 +45,20 @@ endif()
 '''))
 
 # add the USE_SIRIUS configuration flag in deps.cmake
-additions.append(Addition(
-    Path.cwd()/'cmake'/'system_deps.cmake',
-    '''
+lookup = '''
+if(USE_CPLEX)
+  if(NOT TARGET CPLEX::CPLEX)
+    find_package(CPLEX REQUIRED)
+  endif()
+endif()
+''' if newer_than_v9_13 else '''
 if(USE_CPLEX)
   find_package(CPLEX REQUIRED)
 endif()
-''',
+'''
+additions.append(Addition(
+    Path.cwd()/'cmake'/'system_deps.cmake',
+    lookup,
     '''
 #add SIRIUS
 if (USE_SIRIUS)
@@ -63,15 +71,22 @@ endif(USE_SIRIUS)
 '''))
 
 # add the USE_SIRIUS configuration flag in ortoolsConfig.cmake.in
-additions.append(Addition(
-    Path.cwd()/'cmake'/'ortoolsConfig.cmake.in',
-    '''
+lookup = '''
+if(@USE_SCIP@)
+  if(NOT TARGET SCIP::libscip)
+    find_dependency(SCIP REQUIRED)
+  endif()
+endif()
+''' if newer_than_v9_13 else '''
 if(@USE_SCIP@)
   if(NOT TARGET libscip)
     find_dependency(SCIP REQUIRED)
   endif()
 endif()
-''',
+'''
+additions.append(Addition(
+    Path.cwd()/'cmake'/'ortoolsConfig.cmake.in',
+    lookup,
     '''
 if(@USE_SIRIUS@)
   if(POLICY CMP0074)
@@ -110,9 +125,10 @@ additions.append(Addition(
     '    RunLinearExampleCppStyleAPI("SIRIUS_LP")\n'))
 
 # add the USE_SIRIUS configuration flag in ortools/linear_solver/CMakeLists.txt
+lookup = '  $<$<BOOL:${USE_SCIP}>:SCIP::libscip>\n' if newer_than_v9_13 else '  $<$<BOOL:${USE_SCIP}>:libscip>\n'
 additions.append(Addition(
     Path.cwd()/'ortools'/'linear_solver'/'CMakeLists.txt',
-    '  $<$<BOOL:${USE_SCIP}>:libscip>\n',
+    lookup,
     '  $<$<BOOL:${USE_SIRIUS}>:sirius_solver>\n'))
 
 additions.append(Addition(
