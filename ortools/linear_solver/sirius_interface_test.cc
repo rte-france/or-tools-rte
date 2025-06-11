@@ -976,7 +976,7 @@ TEST(TestSiriusInterface, SetStartingLpBasis) {
 }  // namespace operations_research
 
 int main(int argc, char** argv) {
-  absl::SetFlag(&FLAGS_stderrthreshold, 0);
+  absl::SetStderrThreshold(absl::LogSeverityAtLeast::kInfo);
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
