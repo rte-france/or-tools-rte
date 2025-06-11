@@ -11,7 +11,7 @@ RUN sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo &&\
     sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo &&\
     sed -i s/^#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/*.repo &&\
     sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/*.repo &&\
-    yum install -y devtoolset-11 python3-devel python3-pip python3-numpy &&\
+    yum install -y devtoolset-11 python3-devel python3-pip python3-numpy rh-git227-git &&\
     python3 -m pip install --upgrade pip &&\
     python3 -m pip install dataclasses
 
@@ -60,7 +60,8 @@ ARG OR_REF="stable"
 WORKDIR /home/project
 COPY . .
 FROM devel AS build
-RUN cmake -S. -Bbuild \
+RUN source /opt/rh/rh-git227/enable && \
+    cmake -S. -Bbuild \
     -Dortools_REPO=${OR_REPO} \
     -Dortools_REF=${OR_REF} \
     -DBUILD_DEPS=ON \
