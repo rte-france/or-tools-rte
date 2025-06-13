@@ -18,6 +18,7 @@ FetchContent_Declare(ortools
         GIT_REPOSITORY ${ortools_REPO}
         GIT_TAG ${ortools_REF}
         PATCH_COMMAND cp -rf
+            ${CMAKE_CURRENT_SOURCE_DIR}/bzip2.patch
             ${CMAKE_CURRENT_SOURCE_DIR}/patch.py
             ${CMAKE_CURRENT_SOURCE_DIR}/patch_utils.py
             ${CMAKE_CURRENT_SOURCE_DIR}/ortools
