@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import List
 from patch_utils import *
+from shutil import copyfile
 
 with open('Version.txt', 'r') as f:
     data = f.readlines()
@@ -11,6 +12,10 @@ newer_than_v9_13 = (version_major, version_minor) >= (9, 13)
 
 additions: List[Addition] = []
 replacements: List[Addition] = []
+
+# Fix bzip2's install paths (DLL in Windows)
+if newer_than_v9_13: # bzip2 was introduced as a dependency in v9.13
+    copyfile(Path.cwd()/'bzip2.patch', Path.cwd()/'patches'/'bzip2.patch')
 
 # add the USE_SIRIUS configuration flag in CMakeLists.txt
 additions.append(Addition(
