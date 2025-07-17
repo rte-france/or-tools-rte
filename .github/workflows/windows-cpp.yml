@@ -31,6 +31,7 @@ jobs:
         sirius-release-tag: [ antares-integration-v1.8 ]
         cmake: [
           {generator: "Visual Studio 17 2022", config: Release, build_target: ALL_BUILD, test_target: RUN_TESTS, install_target: INSTALL},
+          {generator: "Visual Studio 17 2022", config: Debug, build_target: ALL_BUILD, test_target: RUN_TESTS, install_target: INSTALL},
         ]
     steps:
       - name: set or-tools repo vars if release
@@ -102,13 +103,21 @@ jobs:
           cmake -S. -Bbuild
           -G "Visual Studio 17 2022"
           -DCMAKE_CONFIGURATION_TYPES=${{ matrix.cmake.config }}
+          -DCMAKE_BUILD_TYPE=${{ matrix.cmake.config }}
+          -DBUILD_FLATZINC=OFF 
+          -DBUILD_TESTING=OFF
           -DBUILD_DEPS=ON
-          -DBUILD_EXAMPLES=${{ env.RELEASE_CREATED == 'true' && 'OFF' || (matrix.cmake.config != 'Release' && 'OFF' || 'ON') }}
+          -DBUILD_EXAMPLES=OFF
           -DBUILD_SAMPLES=OFF
+          -DBUILD_SHARED_LIBS=OFF
           -DCMAKE_INSTALL_PREFIX=install
           -DUSE_SIRIUS=${{ matrix.sirius }}
+          -DUSE_SCIP=ON
+          -DUSE_GLPK=OFF
           -DUSE_HIGHS=ON
           -DUSE_PDLP=ON
+          -DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT="ProgramDatabase"
+          -DCMAKE_EXE_LINKER_FLAGS_RELEASE="/INCREMENTAL:NO /DEBUG /OPT:REF /OPT:ICF"
 
       - name: Build
         run: >
