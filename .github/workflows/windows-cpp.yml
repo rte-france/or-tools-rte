@@ -101,7 +101,7 @@ jobs:
       - name: Configure
         run: >
           cmake -S. -Bbuild
-          -G =${{ matrix.cmake.generator }}
+          -G "${{ matrix.cmake.generator }}"
           -DCMAKE_CONFIGURATION_TYPES=${{ matrix.cmake.config }}
           -DBUILD_DEPS=ON
           -DBUILD_EXAMPLES=${{ env.RELEASE_CREATED == 'true' && 'OFF' || (matrix.cmake.config != 'Release' && 'OFF' || 'ON') }}
