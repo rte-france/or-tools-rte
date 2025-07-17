@@ -31,7 +31,7 @@ jobs:
         sirius-release-tag: [ antares-integration-v1.8 ]
         cmake: [
           { generator: "Visual Studio 17 2022", config: Release, build_target: ALL_BUILD, test_target: RUN_TESTS, install_target: INSTALL },
-          { generator: "Ninja", config: Debug, build_target: ALL_BUILD, test_target: RUN_TESTS, install_target: INSTALL }
+          { generator: "Ninja", config: Debug, build_target: all, test_target: RUN_TESTS, install_target: INSTALL }
         ]
     steps:
       - name: set or-tools repo vars if release
@@ -115,7 +115,7 @@ jobs:
         run: >
           cmake --build build 
           --config ${{ matrix.cmake.config }} 
-          --target ALL_BUILD
+          --target ${{ matrix.cmake.build_target }} 
           -v -j2 >> ${{ github.workspace }}/build_logs.txt
 
       - name: Upload build logs on failure
