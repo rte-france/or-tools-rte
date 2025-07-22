@@ -27,11 +27,11 @@ jobs:
       fail-fast: false
       matrix:
         sirius: [ON, OFF]
-        os: [windows-latest]
+        os: [windows-2019]
         sirius-release-tag: [ antares-integration-v1.8 ]
         cmake: [
-          {generator: "Visual Studio 17 2022", config: Release, build_target: ALL_BUILD, test_target: RUN_TESTS, install_target: INSTALL},
-          {generator: "Visual Studio 17 2022", config: Debug, build_target: ALL_BUILD, test_target: RUN_TESTS, install_target: INSTALL},
+          {generator: "Visual Studio 16 2019", config: Release, build_target: ALL_BUILD, test_target: RUN_TESTS, install_target: INSTALL},
+          {generator: "Visual Studio 16 2019", config: Debug, build_target: ALL_BUILD, test_target: RUN_TESTS, install_target: INSTALL},
         ]
     steps:
       - name: set or-tools repo vars if release
@@ -104,7 +104,7 @@ jobs:
         run: |
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64 -vcvars_ver=14.43
           cmake -S. -Bbuild ^
-            -G "Visual Studio 17 2022" ^
+            -G "Visual Studio 16 2019" ^
             -DCMAKE_CONFIGURATION_TYPES=${{ matrix.cmake.config }} ^
             -DCMAKE_BUILD_TYPE=${{ matrix.cmake.config }} ^
             -DBUILD_FLATZINC=OFF ^
