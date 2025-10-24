@@ -186,7 +186,7 @@ jobs:
           cd build
           ARCHIVE_NAME="ortools_cxx${{ steps.names.outputs.appendix_with_shared }}.zip"
           ARCHIVE_PATH="$PWD/${ARCHIVE_NAME}"
-          zip -r $ARCHIVE_PATH ./install
+          zip -ry $ARCHIVE_PATH ./install
           echo "archive_name=$ARCHIVE_NAME" >> $GITHUB_OUTPUT
           echo "archive_path=$ARCHIVE_PATH" >> $GITHUB_OUTPUT
 
@@ -210,7 +210,7 @@ jobs:
           cp ./build/_deps/ortools-build/python/dist/*.whl $MY_DIR
           ARCHIVE_NAME="${MY_DIR}.zip"
           ARCHIVE_PATH="$PWD/${ARCHIVE_NAME}"
-          zip -r ${ARCHIVE_PATH} ${MY_DIR}
+          zip -ry ${ARCHIVE_PATH} ${MY_DIR}
           echo "archive_name=$ARCHIVE_NAME" >> $GITHUB_OUTPUT
           echo "archive_path=$ARCHIVE_PATH" >> $GITHUB_OUTPUT
 
@@ -242,7 +242,7 @@ jobs:
           echo "ARCHIVE_PATH=${ARCHIVE_PATH}"
           echo "MY_DIR=${MY_DIR}"
           echo "PWD=$PWD"
-          zip -r $ARCHIVE_PATH $MY_DIR
+          zip -ry $ARCHIVE_PATH $MY_DIR
           echo "archive_name=$ARCHIVE_NAME" >> $GITHUB_OUTPUT
           echo "archive_path=$ARCHIVE_PATH" >> $GITHUB_OUTPUT
       - name: Upload OR-Tools jar artifact
