@@ -199,7 +199,7 @@ jobs:
           cd build
           ARCHIVE_NAME="ortools_cxx${{ steps.names.outputs.appendix_with_shared }}.zip"
           ARCHIVE_PATH="${{ github.workspace }}/build/${ARCHIVE_NAME}"
-          zip -r "$ARCHIVE_PATH" ./install
+          zip -ry "$ARCHIVE_PATH" ./install
           echo "archive_name=$ARCHIVE_NAME" >> $GITHUB_OUTPUT
           echo "archive_path=$ARCHIVE_PATH" >> $GITHUB_OUTPUT
 
@@ -226,7 +226,7 @@ jobs:
           cp *.whl "${MY_DIR}"
           ARCHIVE_NAME="${MY_DIR}.zip"
           ARCHIVE_PATH="${{ github.workspace }}/build/${ARCHIVE_NAME}"
-          zip -r "${ARCHIVE_PATH}" "${MY_DIR}"
+          zip -ry "${ARCHIVE_PATH}" "${MY_DIR}"
           echo "archive_name=$ARCHIVE_NAME" >> $GITHUB_OUTPUT
           echo "archive_path=$ARCHIVE_PATH" >> $GITHUB_OUTPUT
 
@@ -253,7 +253,7 @@ jobs:
           cp ortools-*/target/*.jar "${MY_DIR}"
           ARCHIVE_NAME="${MY_DIR}.zip"
           ARCHIVE_PATH="${{ github.workspace }}/build/${ARCHIVE_NAME}"
-          zip -r "${ARCHIVE_PATH}" "${MY_DIR}"
+          zip -ry "${ARCHIVE_PATH}" "${MY_DIR}"
           echo "archive_name=$ARCHIVE_NAME" >> $GITHUB_OUTPUT
           echo "archive_path=$ARCHIVE_PATH" >> $GITHUB_OUTPUT
 
@@ -281,7 +281,7 @@ jobs:
           cp Google.OrTools.runtime.*.nupkg "${MY_DIR}"
           ARCHIVE_NAME="${MY_DIR}.zip"
           ARCHIVE_PATH="${{ github.workspace }}/build/${ARCHIVE_NAME}"
-          zip -r "${ARCHIVE_PATH}" "${MY_DIR}"
+          zip -ry "${ARCHIVE_PATH}" "${MY_DIR}"
           echo "archive_name=$ARCHIVE_NAME" >> $GITHUB_OUTPUT
           echo "archive_path=$ARCHIVE_PATH" >> $GITHUB_OUTPUT
 
