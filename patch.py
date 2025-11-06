@@ -219,7 +219,7 @@ replacements.append(Addition(
 if newer_than_v9_12:
     additions.append(Addition(
         Path.cwd()/'ortools'/'math_opt'/'core'/'solver_interface.cc',
-        'namespace {}  // namespace\n\n',
+        '}  // namespace\n\n',
         '''
     #if USE_PDLP
     class PdlpSolver : public SolverInterface {
@@ -259,7 +259,7 @@ if newer_than_v9_12:
 else:
     additions.append(Addition(
         Path.cwd()/'ortools'/'math_opt'/'core'/'solver_interface.cc',
-        'namespace {}  // namespace\n\n',
+        '}  // namespace\n\n',
         '''
     #if USE_PDLP
     class PdlpSolver : public SolverInterface {
