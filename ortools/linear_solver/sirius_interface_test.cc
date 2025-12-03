@@ -68,6 +68,8 @@ class SRSGetter {
     return prob()->problem_mps->L[n];
   }
 
+  double getObjectiveOffset() { return prob()->problem_mps->objective_offset; }
+
   bool getObjectiveSense() { return prob()->maximize; }
 
   int getPresolve() { return prob()->presolve; }
@@ -446,23 +448,6 @@ TEST(TestSiriusInterface, ObjectiveCoef) {
   EXPECT_EQ(getter.getObjectiveCoef(x->index()), coef);
 }
 
-TEST(TestSiriusInterface, DISABLED_ObjectiveOffset) {
-  // ObjectiveOffset not implemented for sirius_interface
-  UNITTEST_INIT_MIP();
-  solver.MakeRowConstraint(-solver.infinity(), 0);
-
-  MPVariable* x = solver.MakeBoolVar("x");
-  MPObjective* obj = solver.MutableObjective();
-  double offset = 4.3;
-  obj->SetOffset(offset);
-  solver.Solve();
-  // EXPECT_EQ(getter.getObjectiveOffset(), offset);
-  offset = 3.6;
-  obj->SetOffset(offset);
-  solver.Solve();
-  // EXPECT_EQ(getter.getObjectiveOffset(), offset);
-}
-
 TEST(TestSiriusInterface, ObjectiveOffset) {
   UNITTEST_INIT_MIP();
   solver.MakeRowConstraint(-solver.infinity(), 0);
@@ -470,7 +455,12 @@ TEST(TestSiriusInterface, ObjectiveOffset) {
   MPVariable* x = solver.MakeBoolVar("x");
   MPObjective* obj = solver.MutableObjective();
   double offset = 4.3;
-  EXPECT_THROW(obj->SetOffset(offset), std::logic_error);
+  obj->SetOffset(offset);
+  EXPECT_EQ(getter.getObjectiveOffset(), obj->offset());
+  EXPECT_EQ(getter.getObjectiveOffset(), offset);
+  offset = 3.6;
+  obj->SetOffset(offset);
+  EXPECT_EQ(getter.getObjectiveOffset(), offset);
 }
 
 TEST(TestSiriusInterface, ClearObjective) {
