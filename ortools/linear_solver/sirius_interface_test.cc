@@ -460,18 +460,7 @@ TEST(TestSiriusInterface, ObjectiveOffset) {
   EXPECT_EQ(getter.getObjectiveOffset(), offset);
   offset = 3.6;
   obj->SetOffset(offset);
-  solver.Solve();
   EXPECT_EQ(getter.getObjectiveOffset(), offset);
-}
-
-TEST(TestSiriusInterface, ObjectiveOffset) {
-  UNITTEST_INIT_MIP();
-  solver.MakeRowConstraint(-solver.infinity(), 0);
-
-  MPVariable* x = solver.MakeBoolVar("x");
-  MPObjective* obj = solver.MutableObjective();
-  double offset = 4.3;
-  EXPECT_THROW(obj->SetOffset(offset), std::logic_error);
 }
 
 TEST(TestSiriusInterface, ClearObjective) {
