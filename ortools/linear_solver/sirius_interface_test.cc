@@ -68,6 +68,8 @@ class SRSGetter {
     return prob()->problem_mps->L[n];
   }
 
+  double getObjectiveOffset() { return prob()->problem_mps->objective_offset; }
+
   bool getObjectiveSense() { return prob()->maximize; }
 
   int getPresolve() { return prob()->presolve; }
