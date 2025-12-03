@@ -614,8 +614,7 @@ void SiriusInterface::SetObjectiveCoefficient(MPVariable const* const variable,
 void SiriusInterface::SetObjectiveOffset(double value) {
   // Changing the objective offset is O(1), so we always do it immediately.
   InvalidateSolutionSynchronization();
-  throw std::logic_error("Not implemented");
-  // FIXME CHECK_STATUS(SRSsetobjoffset(mLp, value));
+  SRSsetobjoffset(mLp, value);
 }
 
 void SiriusInterface::ClearObjective() {
