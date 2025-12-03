@@ -446,8 +446,7 @@ TEST(TestSiriusInterface, ObjectiveCoef) {
   EXPECT_EQ(getter.getObjectiveCoef(x->index()), coef);
 }
 
-TEST(TestSiriusInterface, DISABLED_ObjectiveOffset) {
-  // ObjectiveOffset not implemented for sirius_interface
+TEST(TestSiriusInterface, ObjectiveOffset) {
   UNITTEST_INIT_MIP();
   solver.MakeRowConstraint(-solver.infinity(), 0);
 
@@ -456,11 +455,11 @@ TEST(TestSiriusInterface, DISABLED_ObjectiveOffset) {
   double offset = 4.3;
   obj->SetOffset(offset);
   solver.Solve();
-  // EXPECT_EQ(getter.getObjectiveOffset(), offset);
+  EXPECT_EQ(getter.getObjectiveOffset(), offset);
   offset = 3.6;
   obj->SetOffset(offset);
   solver.Solve();
-  // EXPECT_EQ(getter.getObjectiveOffset(), offset);
+  EXPECT_EQ(getter.getObjectiveOffset(), offset);
 }
 
 TEST(TestSiriusInterface, ObjectiveOffset) {
