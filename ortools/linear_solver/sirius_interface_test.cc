@@ -456,7 +456,7 @@ TEST(TestSiriusInterface, ObjectiveOffset) {
   MPObjective* obj = solver.MutableObjective();
   double offset = 4.3;
   obj->SetOffset(offset);
-  solver.Solve();
+  EXPECT_EQ(getter.getObjectiveOffset(), obj->offset());
   EXPECT_EQ(getter.getObjectiveOffset(), offset);
   offset = 3.6;
   obj->SetOffset(offset);
