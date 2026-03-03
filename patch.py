@@ -98,19 +98,6 @@ if(@USE_SIRIUS@)
 endif()
 '''))
 
-# add SIRIUS execution in example files
-additions.append(Addition(
-    Path.cwd()/'examples'/'cpp'/'linear_programming.cc',
-    '  RunLinearProgrammingExample("XPRESS_LP");\n',
-    '  RunLinearProgrammingExample("SIRIUS_LP");\n'
-))
-
-additions.append(Addition(
-    Path.cwd()/'examples'/'dotnet'/'cslinearprogramming.cs',
-    '        RunLinearProgrammingExample("XPRESS_LP");\n',
-    '        RunLinearProgrammingExample("SIRIUS_LP");\n'
-))
-
 additions.append(Addition(
     Path.cwd()/'examples'/'java'/'LinearProgramming.java',
     '''    runLinearProgrammingExample("CLP", false);
@@ -146,40 +133,25 @@ additions.append(Addition(
 '''))
 
 # add the SIRIUS support in ortools/linear_solver/linear_solver.cc & .h
-additions.append(Addition(
-    Path.cwd()/'ortools'/'linear_solver'/'linear_solver.cc',
-    '''extern MPSolverInterface* BuildXpressInterface(bool mip,
-                                               MPSolver* const solver);
-''',
-    '''#if defined(USE_SIRIUS)
-extern MPSolverInterface* BuildSiriusInterface(bool mip, MPSolver* const solver);
-#endif
-'''))
 
 additions.append(Addition(
     Path.cwd()/'ortools'/'linear_solver'/'linear_solver.cc',
-    '''      return BuildXpressInterface(false, solver);
-''',
-    '''#if defined(USE_SIRIUS)
-	case MPSolver::SIRIUS_LINEAR_PROGRAMMING:
-		return BuildSiriusInterface(false, solver);
-	case MPSolver::SIRIUS_MIXED_INTEGER_PROGRAMMING:
-		return BuildSiriusInterface(true, solver);
-#endif
-'''))
-
-additions.append(Addition(
-    Path.cwd()/'ortools'/'linear_solver'/'linear_solver.cc',
-    '''#ifdef USE_CPLEX
-  if (problem_type == CPLEX_LINEAR_PROGRAMMING ||
-      problem_type == CPLEX_MIXED_INTEGER_PROGRAMMING) {
-    return true;
-  }
-#endif
+    '''case MPModelRequest::CPLEX_LINEAR_PROGRAMMING:
+      return false;
 ''',
     '''#ifdef USE_SIRIUS
-  if (problem_type == SIRIUS_MIXED_INTEGER_PROGRAMMING) return true;
-  if (problem_type == SIRIUS_LINEAR_PROGRAMMING) return true;
+    case MPModelRequest::SIRIUS_LINEAR_PROGRAMMING:
+      return false;
+#endif
+'''))
+additions.append(Addition(
+    Path.cwd()/'ortools'/'linear_solver'/'linear_solver.cc',
+    '''case MPModelRequest::CPLEX_MIXED_INTEGER_PROGRAMMING:
+      return true;
+''',
+    '''#ifdef USE_SIRIUS
+    case MPModelRequest::SIRIUS_MIXED_INTEGER_PROGRAMMING:
+      return false;
 #endif
 '''))
 
@@ -204,11 +176,13 @@ additions.append(Addition(
     '  friend class XpressInterface;\n',
     '  friend class SiriusInterface;\n'))
 
-# Disable "cxx_cpp_variable_intervals_sat" example (fails in windows CI)
 additions.append(Addition(
-    Path.cwd()/'examples'/'cpp'/'CMakeLists.txt',
-    'list(FILTER CXX_SRCS EXCLUDE REGEX ".*/weighted_tardiness_sat.cc")\n',
-    'list(FILTER CXX_SRCS EXCLUDE REGEX ".*/variable_intervals_sat.cc")\n'))
+    Path.cwd()/'ortools'/'linear_solver'/'linear_solver.proto',
+    'HIGHS_LINEAR_PROGRAMMING = 15;\n',
+    '''    SIRIUS_LINEAR_PROGRAMMING = 110;
+    SIRIUS_MIXED_INTEGER_PROGRAMMING = 111;
+    '''
+))
 
 # MathOpt patch : replace solver declaration
 # TODO: remove this when the following issue is resolved: https://github.com/google/or-tools/discussions/4538
