@@ -30,8 +30,7 @@ jobs:
           { version: "3.10", dir: Python310 },
           { version: "3.11", dir: Python311 },
           { version: "3.12", dir: Python312 },
-          { version: "3.13", dir: Python313 },
-          { version: "3.14", dir: Python314 },
+          { version: "3.13", dir: Python313 }
         ]
     steps:
       - name: set or-tools repo vars if release

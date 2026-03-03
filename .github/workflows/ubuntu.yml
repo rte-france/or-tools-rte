@@ -37,8 +37,7 @@ jobs:
           { shared: ON,  java: OFF, dotnet: OFF, python: ON,  python-version: "3.10", publish-cxx-or: OFF, sirius: OFF },
           { shared: ON,  java: OFF, dotnet: OFF, python: ON,  python-version: "3.11", publish-cxx-or: OFF, sirius: OFF },
           { shared: ON,  java: OFF, dotnet: OFF, python: ON,  python-version: "3.12", publish-cxx-or: OFF, sirius: OFF },
-          { shared: ON,  java: OFF, dotnet: OFF, python: ON,  python-version: "3.13", publish-cxx-or: OFF, sirius: OFF },
-          { shared: ON,  java: OFF, dotnet: OFF, python: ON,  python-version: "3.14", publish-cxx-or: OFF, sirius: OFF },
+          { shared: ON,  java: OFF, dotnet: OFF, python: ON,  python-version: "3.13", publish-cxx-or: OFF, sirius: OFF }
         ]
         sirius-release-tag: [antares-integration-v1.8]
     steps:
