@@ -30,15 +30,16 @@ jobs:
       matrix:
         os: ["ubuntu-22.04"]
         cmake: [
-          { shared: OFF, java: OFF, dotnet: OFF, python: OFF, python-version: "3.10",  publish-cxx-or: ON },
-          { shared: ON,  java: ON,  dotnet: ON,  python: OFF, python-version: "3.10",  publish-cxx-or: ON },
-          { shared: ON,  java: OFF, dotnet: OFF, python: ON,  python-version: "3.10", publish-cxx-or: OFF },
-          { shared: ON,  java: OFF, dotnet: OFF, python: ON,  python-version: "3.11", publish-cxx-or: OFF },
-          { shared: ON,  java: OFF, dotnet: OFF, python: ON,  python-version: "3.12", publish-cxx-or: OFF },
-          { shared: ON,  java: OFF, dotnet: OFF, python: ON,  python-version: "3.13", publish-cxx-or: OFF },
-          { shared: ON,  java: OFF, dotnet: OFF, python: ON,  python-version: "3.14", publish-cxx-or: OFF },
+          { shared: OFF, java: OFF, dotnet: OFF, python: OFF, python-version: "3.10",  publish-cxx-or: ON, sirius: OFF },
+          { shared: ON,  java: ON,  dotnet: ON,  python: OFF, python-version: "3.10",  publish-cxx-or: ON, sirius: OFF },
+          { shared: OFF, java: OFF, dotnet: OFF, python: OFF, python-version: "3.10",  publish-cxx-or: ON, sirius: ON },
+          { shared: ON,  java: ON,  dotnet: ON,  python: OFF, python-version: "3.10",  publish-cxx-or: ON, sirius: ON },
+          { shared: ON,  java: OFF, dotnet: OFF, python: ON,  python-version: "3.10", publish-cxx-or: OFF, sirius: OFF },
+          { shared: ON,  java: OFF, dotnet: OFF, python: ON,  python-version: "3.11", publish-cxx-or: OFF, sirius: OFF },
+          { shared: ON,  java: OFF, dotnet: OFF, python: ON,  python-version: "3.12", publish-cxx-or: OFF, sirius: OFF },
+          { shared: ON,  java: OFF, dotnet: OFF, python: ON,  python-version: "3.13", publish-cxx-or: OFF, sirius: OFF },
+          { shared: ON,  java: OFF, dotnet: OFF, python: ON,  python-version: "3.14", publish-cxx-or: OFF, sirius: OFF },
         ]
-        sirius: [ON, OFF]
         sirius-release-tag: [antares-integration-v1.8]
     steps:
       - name: Checkout this repository
@@ -108,7 +109,7 @@ jobs:
           ln -s $XPRESS_DIR/lib/libxprs.so.45 $XPRESS_DIR/lib/libxprs.so
 
       - name: Download Sirius
-        if: ${{ matrix.sirius == 'ON' }}
+        if: ${{ matrix.cmake.sirius == 'ON' }}
         shell: bash
         run: |
           zipfile=${{ matrix.os }}_sirius-solver.zip
@@ -122,7 +123,7 @@ jobs:
         if: ${{ startsWith(matrix.os, 'ubuntu') }}
         uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: ${{ matrix.os }}-${{ matrix.cmake.shared }}-${{ matrix.sirius }}-${{ matrix.cmake.dotnet }}-${{ matrix.cmake.java }}-${{ matrix.cmake.python }}-${{ matrix.cmake.python-version }}
+          key: ${{ matrix.os }}-${{ matrix.cmake.shared }}-${{ matrix.cmake.sirius }}-${{ matrix.cmake.dotnet }}-${{ matrix.cmake.java }}-${{ matrix.cmake.python }}-${{ matrix.cmake.python-version }}
 
       - name: Check cmake
         run: cmake --version
@@ -138,7 +139,7 @@ jobs:
           -DBUILD_DOTNET=${{ matrix.cmake.dotnet }}
           -DBUILD_EXAMPLES=${{ env.RELEASE_CREATED == 'true' && 'OFF' || 'ON' }}
           -DBUILD_DEPS=ON
-          -DUSE_SIRIUS=${{ matrix.sirius }}
+          -DUSE_SIRIUS=${{ matrix.cmake.sirius }}
           -Dsirius_solver_DIR="${{ env.SIRIUS_CMAKE_DIR }}"
           -DBUILD_SAMPLES=OFF
           -DCMAKE_INSTALL_PREFIX="build/install"
@@ -185,7 +186,7 @@ jobs:
         run: |
           SHARED=${{ matrix.cmake.shared }}
           [ $SHARED == "ON" ] && WITH_SHARED="_shared" || WITH_SHARED="_static"
-          SIRIUS=${{ matrix.sirius }}
+          SIRIUS=${{ matrix.cmake.sirius }}
           [ $SIRIUS == "ON" ] && WITH_SIRIUS="_sirius" || WITH_SIRIUS=""
           OS="_${{ matrix.os }}"
           APPENDIX="${OS}${WITH_SIRIUS}"
