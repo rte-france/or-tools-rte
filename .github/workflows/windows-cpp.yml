@@ -77,7 +77,7 @@ jobs:
         shell: bash
         run: |
           python -m pip install --no-cache-dir "xpress==9.6.2"
-          XPRESS_DIR="${{ env.pythonLocation }}\Lib\site-packages\xpress"
+          XPRESS_DIR="${{ env.pythonLocation }}\Lib\site-packages\xpresslibs"
           cp -r $XPRESS_DIR/lib $XPRESS_DIR/bin
           echo "XPRESSDIR=$XPRESS_DIR" >> $GITHUB_ENV
           echo "$XPRESS_DIR/bin" >> $GITHUB_PATH
