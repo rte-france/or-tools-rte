@@ -184,6 +184,13 @@ additions.append(Addition(
     '''
 ))
 
+# enable xpress for mathopt-python (to remove starting v9.16)
+additions.append(Addition(
+    Path.cwd()/'ortools'/'math_opt'/'python'/'parameters.py',
+    'SANTORINI = math_opt_parameters_pb2.SOLVER_TYPE_SANTORINI\n',
+    '    XPRESS = math_opt_parameters_pb2.SOLVER_TYPE_XPRESS\n'
+))
+
 # run patch
 for a in additions:
     add_in_file(a.filepath, a.search, a.search+a.add)
