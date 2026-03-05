@@ -119,6 +119,19 @@ additions.append(Addition(
     '  $<$<BOOL:${USE_SIRIUS}>:sirius_solver>\n'))
 
 additions.append(Addition(
+    Path.cwd() / 'ortools' / 'linear_solver' / 'CMakeLists.txt',
+    '''if(USE_XPRESS)
+  list(APPEND _SRCS xpress_interface.cc)
+endif()
+''',
+    '''
+if(USE_SIRIUS)
+  list(APPEND _SRCS sirius_interface.cc)
+endif()
+'''
+))
+
+additions.append(Addition(
     Path.cwd()/'ortools'/'linear_solver'/'CMakeLists.txt',
     '''  add_test(NAME cxx_unittests_xpress_interface COMMAND test_xprs_interface)
 ''',
