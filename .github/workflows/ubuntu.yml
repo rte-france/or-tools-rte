@@ -172,7 +172,7 @@ jobs:
       - name: run tests sirius
         working-directory: ./build/
         run: >
-          ctest -V -C Release --output-on-failure -R "sirius"
+          ctest -V -C Release --output-on-failure -R "_sirius"
 
       - name: set name variables
         id: names
