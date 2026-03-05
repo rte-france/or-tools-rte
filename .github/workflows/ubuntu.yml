@@ -67,7 +67,7 @@ jobs:
 
       - name: Install GCC11 and others
         shell: bash
-        run:  |
+        run: |
           sudo apt update
           sudo apt install gcc-11 g++-11
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 110 --slave /usr/bin/g++ g++ /usr/bin/g++-11 --slave /usr/bin/gcov gcov /usr/bin/gcov-11
@@ -161,20 +161,12 @@ jobs:
       - name: run tests xpress
         working-directory: ./build/
         run: >
-          ctest 
-          -V 
-          -C Release 
-          --output-on-failure 
-          -R "_xpress" 
+          ctest -V -C Release --output-on-failure -R "_xpress" 
 
       - name: run tests sirius
         working-directory: ./build/
         run: >
-          ctest 
-          -V 
-          -C Release 
-          --output-on-failure 
-          -R "sirius"
+          ctest -V -C Release --output-on-failure -R "sirius"
 
       - name: set name variables
         id: names
