@@ -143,8 +143,9 @@ jobs:
           -DBUILD_DEPS=ON
           -DUSE_SIRIUS=${{ matrix.cmake.sirius }}
           -Dsirius_solver_DIR="${{ env.SIRIUS_CMAKE_DIR }}"
-          -DBUILD_SAMPLES=OFF
           -DBUILD_TESTING=ON
+          -DBUILD_SAMPLES=ON
+          -DBUILD_CXX_SAMPLES=ON
           -DCMAKE_INSTALL_PREFIX="build/install"
           -DUSE_HIGHS=ON
           -DUSE_PDLP=ON
