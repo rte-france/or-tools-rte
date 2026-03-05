@@ -157,7 +157,7 @@ jobs:
           --target all install -j4
 
       - name: run tests not xpress
-        if: ${{ matrix.cmake.shared == 'ON' && (matrix.cmake.python != 'ON' || matrix.cmake.python-version != '3.8' ) }}
+        if: ${{ matrix.cmake.shared == 'ON' }}
         working-directory: ./build/
         run: >
           ctest
@@ -171,6 +171,7 @@ jobs:
           ctest -V -C Release --output-on-failure -R "_xpress" 
 
       - name: run tests sirius
+        if: ${{ matrix.cmake.sirius == 'ON' }}
         working-directory: ./build/
         run: >
           ctest -V -C Release --output-on-failure -R "_sirius"

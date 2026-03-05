@@ -70,6 +70,7 @@ RUN source /opt/rh/rh-git227/enable && \
     -DBUILD_EXAMPLES=${BUILD_EXAMPLES}\
     -DCMAKE_INSTALL_PREFIX=install \
     -DBUILD_SAMPLES=OFF \
+    -DBUILD_TESTING=ON \
     -DBUILD_FLATZINC=OFF \
     -Dsirius_solver_DIR="$SIRIUS_CMAKE_DIR" \
     -DUSE_HIGHS=ON \

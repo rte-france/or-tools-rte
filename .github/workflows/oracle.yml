@@ -183,7 +183,7 @@ jobs:
         if: ${{ matrix.sirius == 'ON' }}
         run: |
           cd build
-          ctest -V -C Release --output-on-failure -R 'sirius'
+          ctest -V -C Release --output-on-failure -R "_sirius"
 
       - name: Prepare OR-Tools install
         id: or-install
