@@ -204,6 +204,13 @@ additions.append(Addition(
     '    XPRESS = math_opt_parameters_pb2.SOLVER_TYPE_XPRESS\n'
 ))
 
+replacements.append(
+    Addition(
+    Path.cwd()/'cmake'/'dependencies'/'CMakeLists.txt',
+    'set(BUILD_TESTING OFF)\n',
+    ''
+))
+
 # run patch
 for a in additions:
     add_in_file(a.filepath, a.search, a.search+a.add)
