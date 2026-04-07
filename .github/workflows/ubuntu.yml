@@ -149,6 +149,7 @@ jobs:
           -DCMAKE_INSTALL_PREFIX="build/install"
           -DUSE_HIGHS=ON
           -DUSE_PDLP=ON
+          -DUSE_XPRESS=ON
 
       - name: Build OR-Tools Linux
         run: >
