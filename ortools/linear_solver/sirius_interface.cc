@@ -1464,5 +1464,25 @@ MPSolverInterface* BuildSiriusInterface(bool mip, MPSolver* const solver) {
   return new SiriusInterface(solver, mip);
 }
 
+namespace {
+// See MpSolverInterfaceFactoryRepository for details.
+const void* const kRegisterSirius ABSL_ATTRIBUTE_UNUSED = [] {
+  MPSolverInterfaceFactoryRepository::GetInstance()->Register(
+      [](MPSolver* const solver) { return new SiriusInterface(solver, false); },
+      MPSolver::SIRIUS_LINEAR_PROGRAMMING,
+      []() { return true; });
+  return nullptr;
+}();
+
+// See MpSolverInterfaceFactoryRepository for details.
+const void* const kRegisterSiriusMip ABSL_ATTRIBUTE_UNUSED = [] {
+  MPSolverInterfaceFactoryRepository::GetInstance()->Register(
+      [](MPSolver* const solver) { return new SiriusInterface(solver, true); },
+      MPSolver::SIRIUS_MIXED_INTEGER_PROGRAMMING,
+      []() { return true; });
+  return nullptr;
+}();
+} // namespace
+
 }  // namespace operations_research
 #endif  // #if defined(USE_SIRUS)

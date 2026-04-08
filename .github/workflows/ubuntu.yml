@@ -8,15 +8,21 @@ on:
         description: 'rte-france/or-tools branch name'
         required: true
         default: 'main'
-  release:
-    types: [ created ]
+        type: string
+  workflow_call:
+    inputs:
+      rtefrance_ortools_branch:
+        description: 'rte-france/or-tools branch name'
+        required: true
+        default: 'main'
+        type: string
 
 env:
   GITHUB_TOKEN: ${{ github.token }}
 
 jobs:
   build:
-    name: ${{ matrix.os }} shrd=${{ matrix.cmake.shared }} sirius=${{ matrix.sirius }} java=${{ matrix.cmake.java }} dotnet=${{ matrix.cmake.dotnet }} python=${{ matrix.cmake.python }}-${{ matrix.cmake.python-version }}
+    name: ${{ matrix.os }} shrd=${{ matrix.cmake.shared }} sirius=${{ matrix.cmake.sirius }} java=${{ matrix.cmake.java }} dotnet=${{ matrix.cmake.dotnet }} python=${{ matrix.cmake.python }}-${{ matrix.cmake.python-version }}
     runs-on: ${{ matrix.os }}
     env:
       XPRESSDIR: ${{ github.workspace }}/xpressmp
@@ -30,13 +36,12 @@ jobs:
       matrix:
         os: ["ubuntu-22.04"]
         cmake: [
-          { shared: OFF, java: OFF, dotnet: OFF, python: OFF, python-version: "3.8",  publish-cxx-or: ON },
-          { shared: ON,  java: ON,  dotnet: ON,  python: OFF, python-version: "3.8",  publish-cxx-or: ON },
-          { shared: ON,  java: OFF, dotnet: OFF, python: ON,  python-version: "3.8",  publish-cxx-or: OFF },
-          { shared: ON,  java: OFF, dotnet: OFF, python: ON,  python-version: "3.9",  publish-cxx-or: OFF },
-          { shared: ON,  java: OFF, dotnet: OFF, python: ON,  python-version: "3.10", publish-cxx-or: OFF },
+          { shared: OFF, java: OFF, dotnet: OFF, python: OFF, python-version: "3.10",  publish-cxx-or: ON, sirius: ON },
+          { shared: ON,  java: ON, dotnet: ON, python: ON,  python-version: "3.10", publish-cxx-or: ON, sirius: OFF },
+          { shared: ON,  java: OFF, dotnet: OFF, python: ON,  python-version: "3.11", publish-cxx-or: OFF, sirius: OFF },
+          { shared: ON,  java: OFF, dotnet: OFF, python: ON,  python-version: "3.12", publish-cxx-or: OFF, sirius: OFF },
+          { shared: ON,  java: OFF, dotnet: OFF, python: ON,  python-version: "3.13", publish-cxx-or: OFF, sirius: OFF }
         ]
-        sirius: [ON, OFF]
         sirius-release-tag: [antares-integration-v1.8]
     steps:
       - name: Checkout this repository
@@ -66,12 +71,12 @@ jobs:
           echo "OR_REPO=$OR_REPO" >> $GITHUB_ENV
           echo "OR_REF=$OR_REF" >> $GITHUB_ENV
 
-      - name: Install GCC10 and others
+      - name: Install GCC11 and others
         shell: bash
-        run:  |
+        run: |
           sudo apt update
-          sudo apt install gcc-10 g++-10
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 110 --slave /usr/bin/g++ g++ /usr/bin/g++-10 --slave /usr/bin/gcov gcov /usr/bin/gcov-10
+          sudo apt install gcc-11 g++-11
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 110 --slave /usr/bin/g++ g++ /usr/bin/g++-11 --slave /usr/bin/gcov gcov /usr/bin/gcov-11
           sudo apt install -yq build-essential lsb-release zlib1g-dev
 
       - name: Swig install
@@ -97,16 +102,16 @@ jobs:
       - name: Set-up Xpress with pip for Ubuntu
         shell: bash
         run: |
-          python -m pip install "xpress==9.2.7"
+          python -m pip install "xpress==9.6.2"
           echo ${{ env.pythonLocation }}
-          XPRESS_DIR=${{ env.pythonLocation }}/lib/python${{ matrix.cmake.python-version }}/site-packages/xpress
+          XPRESS_DIR=${{ env.pythonLocation }}/lib/python${{ matrix.cmake.python-version }}/site-packages/xpresslibs
           echo "XPRESSDIR=$XPRESS_DIR" >> $GITHUB_ENV
           echo "XPAUTH_PATH=$XPRESS_DIR/license/community-xpauth.xpr" >> $GITHUB_ENV
           echo "Create symbolic link for XPRESS library file because it is missing in the Python installation"
-          ln -s $XPRESS_DIR/lib/libxprs.so.42 $XPRESS_DIR/lib/libxprs.so
+          ln -s $XPRESS_DIR/lib/libxprs.so.45 $XPRESS_DIR/lib/libxprs.so
 
       - name: Download Sirius
-        if: ${{ matrix.sirius == 'ON' }}
+        if: ${{ matrix.cmake.sirius == 'ON' }}
         shell: bash
         run: |
           zipfile=${{ matrix.os }}_sirius-solver.zip
@@ -120,7 +125,7 @@ jobs:
         if: ${{ startsWith(matrix.os, 'ubuntu') }}
         uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: ${{ matrix.os }}-${{ matrix.cmake.shared }}-${{ matrix.sirius }}-${{ matrix.cmake.dotnet }}-${{ matrix.cmake.java }}-${{ matrix.cmake.python }}-${{ matrix.cmake.python-version }}
+          key: ${{ matrix.os }}-${{ matrix.cmake.shared }}-${{ matrix.cmake.sirius }}-${{ matrix.cmake.dotnet }}-${{ matrix.cmake.java }}-${{ matrix.cmake.python }}-${{ matrix.cmake.python-version }}
 
       - name: Check cmake
         run: cmake --version
@@ -136,12 +141,15 @@ jobs:
           -DBUILD_DOTNET=${{ matrix.cmake.dotnet }}
           -DBUILD_EXAMPLES=${{ env.RELEASE_CREATED == 'true' && 'OFF' || 'ON' }}
           -DBUILD_DEPS=ON
-          -DUSE_SIRIUS=${{ matrix.sirius }}
+          -DUSE_SIRIUS=${{ matrix.cmake.sirius }}
           -Dsirius_solver_DIR="${{ env.SIRIUS_CMAKE_DIR }}"
-          -DBUILD_SAMPLES=OFF
+          -DBUILD_TESTING=ON
+          -DBUILD_SAMPLES=ON
+          -DBUILD_CXX_SAMPLES=ON
           -DCMAKE_INSTALL_PREFIX="build/install"
           -DUSE_HIGHS=ON
           -DUSE_PDLP=ON
+          -DUSE_XPRESS=ON
 
       - name: Build OR-Tools Linux
         run: >
@@ -151,31 +159,22 @@ jobs:
           --target all install -j4
 
       - name: run tests not xpress
-        if: ${{ matrix.cmake.shared == 'ON' && (matrix.cmake.python != 'ON' || matrix.cmake.python-version != '3.8' ) }}
-        working-directory: ./build/
+        if: ${{ matrix.cmake.shared == 'ON' }}
         run: >
           ctest
+          --test-dir build
           -C Release
           --output-on-failure
           -E "(_xpress|_sirius|python_init_)"
 
       - name: run tests xpress
-        working-directory: ./build/
         run: >
-          ctest 
-          -V 
-          -C Release 
-          --output-on-failure 
-          -R "_xpress" 
+          ctest -V --test-dir build -C Release --output-on-failure -R "_xpress" 
 
       - name: run tests sirius
-        working-directory: ./build/
+        if: ${{ matrix.cmake.sirius == 'ON' }}
         run: >
-          ctest 
-          -V 
-          -C Release 
-          --output-on-failure 
-          -R "sirius"
+          ctest -V --test-dir build -C Release --output-on-failure -R "_sirius"
 
       - name: set name variables
         id: names
@@ -183,7 +182,7 @@ jobs:
         run: |
           SHARED=${{ matrix.cmake.shared }}
           [ $SHARED == "ON" ] && WITH_SHARED="_shared" || WITH_SHARED="_static"
-          SIRIUS=${{ matrix.sirius }}
+          SIRIUS=${{ matrix.cmake.sirius }}
           [ $SIRIUS == "ON" ] && WITH_SIRIUS="_sirius" || WITH_SIRIUS=""
           OS="_${{ matrix.os }}"
           APPENDIX="${OS}${WITH_SIRIUS}"

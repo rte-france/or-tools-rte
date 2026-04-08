@@ -8,8 +8,14 @@ on:
         description: 'rte-france/or-tools branch name'
         required: true
         default: 'main'
-  release:
-    types: [ created ]
+        type: string
+  workflow_call:
+    inputs:
+      rtefrance_ortools_branch:
+        description: 'rte-france/or-tools branch name'
+        required: true
+        default: 'main'
+        type: string
 
 env:
   GITHUB_TOKEN: ${{ github.token }}
@@ -84,8 +90,7 @@ jobs:
         run: |
           export PATH=/root/.local/bin:$PATH
           dnf -y update
-          dnf -y install python39-devel python39-pip python39-numpy
-          dnf remove python3.11
+          dnf -y install python3.11-devel python3.11-pip python3.11-numpy
           dnf clean all
           echo "/root/.local/bin" >> $GITHUB_PATH
           echo "$HOME/.local/bin" >> $GITHUB_PATH
@@ -121,11 +126,11 @@ jobs:
 
       - name: Set-up Xpress with pip
         run: |
-          python3 -m pip install "xpress==9.2.7"
-          XPRESS_DIR=/usr/local/lib64/python3.9/site-packages/xpress
+          python3 -m pip install "xpress==9.6.2"
+          XPRESS_DIR=/usr/local/lib64/python3.11/site-packages/xpresslibs
           echo "XPRESSDIR=$XPRESS_DIR" >> $GITHUB_ENV
           echo "XPAUTH_PATH=$XPRESS_DIR/license/community-xpauth.xpr" >> $GITHUB_ENV
-          ln -s $XPRESS_DIR/lib/libxprs.so.42 $XPRESS_DIR/lib/libxprs.so
+          ln -s $XPRESS_DIR/lib/libxprs.so.45 $XPRESS_DIR/lib/libxprs.so
 
       - name: Download Sirius
         if: ${{ matrix.sirius == 'ON' }}
@@ -157,7 +162,8 @@ jobs:
             -DBUILD_SAMPLES=OFF \
             -DBUILD_FLATZINC=OFF \
             -DUSE_HIGHS=ON \
-            -DUSE_PDLP=ON
+            -DUSE_PDLP=ON \
+            -DUSE_XPRESS=ON
 
       - name: Build OR-Tools Linux
         run: |
@@ -178,7 +184,7 @@ jobs:
         if: ${{ matrix.sirius == 'ON' }}
         run: |
           cd build
-          ctest -V -C Release --output-on-failure -R 'sirius'
+          ctest -V -C Release --output-on-failure -R "_sirius"
 
       - name: Prepare OR-Tools install
         id: or-install
@@ -205,7 +211,7 @@ jobs:
         if: ${{ matrix.cmake.python == 'ON' }}
         id: wheel
         run: |
-          MY_DIR="ortools_python-3.9${{ steps.names.outputs.appendix }}"
+          MY_DIR="ortools_python-3.11${{ steps.names.outputs.appendix }}"
           mkdir $MY_DIR
           cp ./build/_deps/ortools-build/python/dist/*.whl $MY_DIR
           ARCHIVE_NAME="${MY_DIR}.zip"

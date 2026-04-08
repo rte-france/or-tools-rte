@@ -98,19 +98,6 @@ if(@USE_SIRIUS@)
 endif()
 '''))
 
-# add SIRIUS execution in example files
-additions.append(Addition(
-    Path.cwd()/'examples'/'cpp'/'linear_programming.cc',
-    '  RunLinearProgrammingExample("XPRESS_LP");\n',
-    '  RunLinearProgrammingExample("SIRIUS_LP");\n'
-))
-
-additions.append(Addition(
-    Path.cwd()/'examples'/'dotnet'/'cslinearprogramming.cs',
-    '        RunLinearProgrammingExample("XPRESS_LP");\n',
-    '        RunLinearProgrammingExample("SIRIUS_LP");\n'
-))
-
 additions.append(Addition(
     Path.cwd()/'examples'/'java'/'LinearProgramming.java',
     '''    runLinearProgrammingExample("CLP", false);
@@ -132,6 +119,19 @@ additions.append(Addition(
     '  $<$<BOOL:${USE_SIRIUS}>:sirius_solver>\n'))
 
 additions.append(Addition(
+    Path.cwd() / 'ortools' / 'linear_solver' / 'CMakeLists.txt',
+    '''if(USE_XPRESS)
+  list(APPEND _SRCS xpress_interface.cc)
+endif()
+''',
+    '''
+if(USE_SIRIUS)
+  list(APPEND _SRCS sirius_interface.cc)
+endif()
+'''
+))
+
+additions.append(Addition(
     Path.cwd()/'ortools'/'linear_solver'/'CMakeLists.txt',
     '''  add_test(NAME cxx_unittests_xpress_interface COMMAND test_xprs_interface)
 ''',
@@ -146,40 +146,25 @@ additions.append(Addition(
 '''))
 
 # add the SIRIUS support in ortools/linear_solver/linear_solver.cc & .h
-additions.append(Addition(
-    Path.cwd()/'ortools'/'linear_solver'/'linear_solver.cc',
-    '''extern MPSolverInterface* BuildXpressInterface(bool mip,
-                                               MPSolver* const solver);
-''',
-    '''#if defined(USE_SIRIUS)
-extern MPSolverInterface* BuildSiriusInterface(bool mip, MPSolver* const solver);
-#endif
-'''))
 
 additions.append(Addition(
     Path.cwd()/'ortools'/'linear_solver'/'linear_solver.cc',
-    '''      return BuildXpressInterface(false, solver);
-''',
-    '''#if defined(USE_SIRIUS)
-	case MPSolver::SIRIUS_LINEAR_PROGRAMMING:
-		return BuildSiriusInterface(false, solver);
-	case MPSolver::SIRIUS_MIXED_INTEGER_PROGRAMMING:
-		return BuildSiriusInterface(true, solver);
-#endif
-'''))
-
-additions.append(Addition(
-    Path.cwd()/'ortools'/'linear_solver'/'linear_solver.cc',
-    '''#ifdef USE_CPLEX
-  if (problem_type == CPLEX_LINEAR_PROGRAMMING ||
-      problem_type == CPLEX_MIXED_INTEGER_PROGRAMMING) {
-    return true;
-  }
-#endif
+    '''case MPModelRequest::CPLEX_LINEAR_PROGRAMMING:
+      return false;
 ''',
     '''#ifdef USE_SIRIUS
-  if (problem_type == SIRIUS_MIXED_INTEGER_PROGRAMMING) return true;
-  if (problem_type == SIRIUS_LINEAR_PROGRAMMING) return true;
+    case MPModelRequest::SIRIUS_LINEAR_PROGRAMMING:
+      return false;
+#endif
+'''))
+additions.append(Addition(
+    Path.cwd()/'ortools'/'linear_solver'/'linear_solver.cc',
+    '''case MPModelRequest::CPLEX_MIXED_INTEGER_PROGRAMMING:
+      return true;
+''',
+    '''#ifdef USE_SIRIUS
+    case MPModelRequest::SIRIUS_MIXED_INTEGER_PROGRAMMING:
+      return false;
 #endif
 '''))
 
@@ -204,101 +189,20 @@ additions.append(Addition(
     '  friend class XpressInterface;\n',
     '  friend class SiriusInterface;\n'))
 
-# Disable "cxx_cpp_variable_intervals_sat" example (fails in windows CI)
 additions.append(Addition(
-    Path.cwd()/'examples'/'cpp'/'CMakeLists.txt',
-    'list(FILTER CXX_SRCS EXCLUDE REGEX ".*/weighted_tardiness_sat.cc")\n',
-    'list(FILTER CXX_SRCS EXCLUDE REGEX ".*/variable_intervals_sat.cc")\n'))
+    Path.cwd()/'ortools'/'linear_solver'/'linear_solver.proto',
+    'HIGHS_LINEAR_PROGRAMMING = 15;\n',
+    '''    SIRIUS_LINEAR_PROGRAMMING = 110;
+    SIRIUS_MIXED_INTEGER_PROGRAMMING = 111;
+    '''
+))
 
-# MathOpt patch : replace solver declaration
-# TODO: remove this when the following issue is resolved: https://github.com/google/or-tools/discussions/4538
-replacements.append(Addition(
-    Path.cwd()/'ortools'/'math_opt'/'core'/'solver_interface.h',
-    'AllSolversRegistry() = default;\n',
-    'AllSolversRegistry();\n'))
-if newer_than_v9_12:
-    additions.append(Addition(
-        Path.cwd()/'ortools'/'math_opt'/'core'/'solver_interface.cc',
-        'namespace {}  // namespace\n\n',
-        '''
-    #if USE_PDLP
-    class PdlpSolver : public SolverInterface {
-    public:
-      static absl::StatusOr<std::unique_ptr<SolverInterface>> New(
-          const ModelProto& model, const InitArgs& init_args);
-    };
-    #endif
-    #if USE_SCIP
-    class GScipSolver : public SolverInterface {
-    public:
-      static absl::StatusOr<std::unique_ptr<SolverInterface>> New(
-          const ModelProto& model, const InitArgs& init_args);
-    };
-    #endif
-    #if USE_XPRESS
-    class XpressSolver : public SolverInterface {
-    public:
-      static absl::StatusOr<std::unique_ptr<XpressSolver>> New(
-      const ModelProto& input_model,
-      const SolverInterface::InitArgs& init_args);
-    };
-    #endif
-    
-    AllSolversRegistry::AllSolversRegistry() {
-    #if USE_PDLP
-      this->Register(SOLVER_TYPE_PDLP, PdlpSolver::New);
-    #endif
-    #if USE_SCIP
-      this->Register(SOLVER_TYPE_GSCIP, GScipSolver::New);
-    #endif
-    #if USE_XPRESS
-      this->Register(SOLVER_TYPE_XPRESS, XpressSolver::New);
-    #endif
-    }
-        '''))
-else:
-    additions.append(Addition(
-        Path.cwd()/'ortools'/'math_opt'/'core'/'solver_interface.cc',
-        'namespace {}  // namespace\n\n',
-        '''
-    #if USE_PDLP
-    class PdlpSolver : public SolverInterface {
-    public:
-      static absl::StatusOr<std::unique_ptr<SolverInterface>> New(
-          const ModelProto& model, const InitArgs& init_args);
-    };
-    #endif
-    #if USE_SCIP
-    class GScipSolver : public SolverInterface {
-    public:
-      static absl::StatusOr<std::unique_ptr<SolverInterface>> New(
-          const ModelProto& model, const InitArgs& init_args);
-    };
-    #endif
-    
-    AllSolversRegistry::AllSolversRegistry() {
-    #if USE_PDLP
-      this->Register(SOLVER_TYPE_PDLP, PdlpSolver::New);
-    #endif
-    #if USE_SCIP
-      this->Register(SOLVER_TYPE_GSCIP, GScipSolver::New);
-    #endif
-    }
-        '''))
-replacements.append(Addition(
-    Path.cwd()/'ortools'/'math_opt'/'solvers'/'pdlp_solver.cc',
-    'MATH_OPT_REGISTER_SOLVER(SOLVER_TYPE_PDLP, PdlpSolver::New);',
-    ''))
-replacements.append(Addition(
-    Path.cwd()/'ortools'/'math_opt'/'solvers'/'gscip_solver.cc',
-    'MATH_OPT_REGISTER_SOLVER(SOLVER_TYPE_GSCIP, GScipSolver::New)',
-    ''))
-if newer_than_v9_12:
-    replacements.append(Addition(
-        Path.cwd()/'ortools'/'math_opt'/'solvers'/'xpress_solver.cc',
-        'MATH_OPT_REGISTER_SOLVER(SOLVER_TYPE_XPRESS, XpressSolver::New)',
-        ''))
-
+# enable xpress for mathopt-python (to remove starting v9.16)
+additions.append(Addition(
+    Path.cwd()/'ortools'/'math_opt'/'python'/'parameters.py',
+    'SANTORINI = math_opt_parameters_pb2.SOLVER_TYPE_SANTORINI\n',
+    '    XPRESS = math_opt_parameters_pb2.SOLVER_TYPE_XPRESS\n'
+))
 
 # run patch
 for a in additions:
