@@ -162,7 +162,7 @@ jobs:
         if: ${{ matrix.cmake.shared == 'ON' }}
         run: >
           ctest
-           --test-dir build
+          --test-dir build
           -C Release
           --output-on-failure
           -E "(_xpress|_sirius|python_init_)"
