@@ -170,13 +170,13 @@ jobs:
       - name: run tests xpress
         working-directory: ./build/
         run: >
-          ctest -V -C Release --output-on-failure -R "_xpress" 
+          ctest -V -C Release --output-on-failure -R "xpress" 
 
       - name: run tests sirius
         if: ${{ matrix.cmake.sirius == 'ON' }}
         working-directory: ./build/
         run: >
-          ctest -V -C Release --output-on-failure -R "_sirius"
+          ctest -V -C Release --output-on-failure -R "sirius"
 
       - name: set name variables
         id: names
