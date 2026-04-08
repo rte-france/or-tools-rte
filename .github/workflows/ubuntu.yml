@@ -160,21 +160,21 @@ jobs:
 
       - name: run tests not xpress
         if: ${{ matrix.cmake.shared == 'ON' }}
-        working-directory: ./build/
         run: >
           ctest
+           --test-dir build
           -C Release
           --output-on-failure
           -E "(_xpress|_sirius|python_init_)"
 
       - name: run tests xpress
         run: >
-          cd build && ctest -V -C Release --output-on-failure -R "_xpress" 
+          ctest -V --test-dir build -C Release --output-on-failure -R "_xpress" 
 
       - name: run tests sirius
         if: ${{ matrix.cmake.sirius == 'ON' }}
         run: >
-          cd build && ctest -V -C Release --output-on-failure -R "_sirius"
+          ctest -V --test-dir build -C Release --output-on-failure -R "_sirius"
 
       - name: set name variables
         id: names
