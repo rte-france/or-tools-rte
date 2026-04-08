@@ -115,6 +115,7 @@ jobs:
           -DUSE_SIRIUS=${{ matrix.sirius }}
           -DUSE_HIGHS=ON
           -DUSE_PDLP=ON
+          -DUSE_XPRESS=ON
 
       - name: Build
         run: >

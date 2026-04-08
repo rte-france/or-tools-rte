@@ -74,7 +74,8 @@ RUN source /opt/rh/rh-git227/enable && \
     -DBUILD_FLATZINC=OFF \
     -Dsirius_solver_DIR="$SIRIUS_CMAKE_DIR" \
     -DUSE_HIGHS=ON \
-    -DUSE_PDLP=ON
+    -DUSE_PDLP=ON \
+    -DUSE_XPRESS=ON
 
 RUN cmake --build build --target all -j4
 RUN cmake --build build --target install

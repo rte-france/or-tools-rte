@@ -162,7 +162,8 @@ jobs:
             -DBUILD_SAMPLES=OFF \
             -DBUILD_FLATZINC=OFF \
             -DUSE_HIGHS=ON \
-            -DUSE_PDLP=ON
+            -DUSE_PDLP=ON \
+            -DUSE_XPRESS=ON
 
       - name: Build OR-Tools Linux
         run: |
