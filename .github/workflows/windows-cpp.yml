@@ -91,7 +91,7 @@ jobs:
       - name: Download Sirius
         if: ${{ matrix.sirius == 'ON' }}
         run: |
-          (New-Object System.Net.WebClient).DownloadFile("https://github.com/rte-france/sirius-solver/releases/tag/${{ env.SIRIUS_RELEASE_TAG }}/${{ matrix.os }}_sirius-solver.zip","sirius-solver.zip");
+          (New-Object System.Net.WebClient).DownloadFile("https://github.com/rte-france/sirius-solver/releases/download/${{ env.SIRIUS_RELEASE_TAG }}/${{ matrix.os }}_sirius-solver.zip","sirius-solver.zip");
           Expand-Archive .\sirius-solver.zip .;
           Remove-Item .\sirius-solver.zip
       - name: Install Sirius
