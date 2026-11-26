@@ -172,7 +172,7 @@ jobs:
           ctest -V --test-dir build -C Release --output-on-failure -R "_xpress" 
 
       - name: run tests sirius
-        if: ${{ matrix.cmake.sirius == 'ON' }}
+        if: ${{ matrix.cmake.sirius == 'ON' && matrix.cmake.shared == 'ON' }}
         run: >
           ctest -V --test-dir build -C Release --output-on-failure -R "_sirius"
 
