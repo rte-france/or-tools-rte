@@ -1,0 +1,38 @@
+name: All Builds
+run-name: Run all workflows with rte-france/or-tools-rte@'${{github.ref_name}}' + rte-france/or-tools@'${{ github.event.inputs.rtefrance_ortools_branch || 'main' }}'
+
+on:
+  workflow_dispatch:
+    inputs:
+      rtefrance_ortools_branch:
+        description: 'rte-france/or-tools branch name'
+        required: true
+        default: 'main'
+  release:
+    types: [ created ]
+
+jobs:
+  centos:
+    uses: ./.github/workflows/centos.yml
+    with:
+      rtefrance_ortools_branch: ${{ inputs.rtefrance_ortools_branch }}
+
+  ubuntu:
+    uses: ./.github/workflows/ubuntu.yml
+    with:
+      rtefrance_ortools_branch: ${{ inputs.rtefrance_ortools_branch }}
+
+  oracle:
+    uses: ./.github/workflows/oracle.yml
+    with:
+      rtefrance_ortools_branch: ${{ inputs.rtefrance_ortools_branch }}
+
+  windows-cpp:
+    uses: ./.github/workflows/windows-cpp.yml
+    with:
+      rtefrance_ortools_branch: ${{ inputs.rtefrance_ortools_branch }}
+
+  windows-python:
+    uses: ./.github/workflows/windows-python.yml
+    with:
+      rtefrance_ortools_branch: ${{ inputs.rtefrance_ortools_branch }}

@@ -8,8 +8,14 @@ on:
         description: 'rte-france/or-tools branch name'
         required: true
         default: 'main'
-  release:
-    types: [ created ]
+        type: string
+  workflow_call:
+    inputs:
+      rtefrance_ortools_branch:
+        description: 'rte-france/or-tools branch name'
+        required: true
+        default: 'main'
+        type: string
 
 env:
   GITHUB_TOKEN: ${{ github.token }}
