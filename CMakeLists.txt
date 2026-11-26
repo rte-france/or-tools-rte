@@ -1,5 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.11)
 project(ortools-rte)
+include(CTest)
 include(FetchContent)
 function(set_if_not_defined var default_value)
     if(NOT DEFINED ${var})
